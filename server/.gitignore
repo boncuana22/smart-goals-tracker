@@ -1,0 +1,13 @@
+# Dependencies
+node_modules/
+
+# Fișiere de mediu
+.env
+
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Fișiere de sistem
+.DS_Store
