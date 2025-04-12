@@ -1,0 +1,54 @@
+.kanban-column {
+    background-color: #f5f5f5;
+    border-radius: 6px;
+    width: 300px;
+    min-width: 300px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .column-header {
+    padding: 16px;
+    background-color: #e0e0e0;
+    border-radius: 6px 6px 0 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .column-header h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: #333;
+  }
+  
+  .task-count {
+    background-color: rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    padding: 2px 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  
+  .column-content {
+    padding: 16px;
+    flex: 1;
+    overflow-y: auto;
+    min-height: 200px;
+  }
+  
+  .empty-column {
+    height: 100px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ccc;
+    border-radius: 6px;
+    margin-top: 10px;
+  }
+  
+  .empty-column p {
+    color: #999;
+    margin: 0;
+  }
