@@ -11,6 +11,7 @@ import Goals from './pages/Goals';
 import Calendar from './pages/Calendar';
 import Financial from './pages/Financial';
 import NotFound from './pages/NotFound';
+import GoalDetails from './pages/GoalDetails';
 
 // Route Guard pentru rute protejate
 const PrivateRoute = ({ children }) => {
@@ -99,6 +100,14 @@ const routes = [
   {
     path: '*',
     element: <NotFound />
+  },
+  {
+    path: '/goals/:id',
+    element: (
+      <PrivateRoute>
+        <GoalDetails />
+      </PrivateRoute>
+    )
   }
 ];
 
