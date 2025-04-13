@@ -1,0 +1,58 @@
+.financial-chart-container {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .metrics-selector {
+    margin-bottom: 20px;
+  }
+  
+  .metrics-selector h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 1rem;
+    color: #333;
+  }
+  
+  .metrics-checkboxes {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  
+  .metric-checkbox {
+    display: flex;
+    align-items: center;
+    font-size: 0.9rem;
+    cursor: pointer;
+    padding: 6px 10px;
+    background-color: #f8f9fa;
+    border-radius: 4px;
+    user-select: none;
+  }
+  
+  .metric-checkbox:hover {
+    background-color: #e9ecef;
+  }
+  
+  .metric-checkbox input {
+    margin-right: 6px;
+  }
+  
+  .chart-wrapper {
+    height: 300px;
+    position: relative;
+  }
+  
+  .chart-loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+    background-color: #f8f9fa;
+    border-radius: 8px;
+    color: #666;
+    font-size: 0.9rem;
+  }

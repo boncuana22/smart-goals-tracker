@@ -1,6 +1,4 @@
-const { DataTypes } = require('sequelize');
-const { sequelize } = require('../config/database');
-
+// În models/FinancialData.js
 const FinancialData = sequelize.define('FinancialData', {
   id: {
     type: DataTypes.INTEGER,
@@ -17,7 +15,19 @@ const FinancialData = sequelize.define('FinancialData', {
   },
   data_period: {
     type: DataTypes.DATE,
-    comment: 'Period/date for which the financial data is relevant'
+    comment: 'Main date for the financial data (usually the end date)'
+  },
+  period_start: {
+    type: DataTypes.DATE,
+    comment: 'Start date of the financial period'
+  },
+  period_end: {
+    type: DataTypes.DATE,
+    comment: 'End date of the financial period'
+  },
+  period_display: {
+    type: DataTypes.STRING,
+    comment: 'Formatted display string for the period'
   },
   data_type: {
     type: DataTypes.ENUM('Balance Sheet', 'Income Statement', 'Cash Flow', 'Other'),
@@ -31,5 +41,3 @@ const FinancialData = sequelize.define('FinancialData', {
 }, {
   timestamps: true
 });
-
-module.exports = FinancialData;

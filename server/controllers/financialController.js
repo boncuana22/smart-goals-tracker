@@ -11,14 +11,27 @@ exports.uploadFinancialData = async (req, res) => {
     }
 
     const userId = req.user.id;
-    const { dataType, dataPeriod } = req.body;
+    const { dataType, startDate, endDate } = req.body;
+    
+    // Verifică dacă avem datele pentru perioadă
+    if (!startDate || !endDate) {
+      return res.status(400).json({ message: 'Start and end dates are required' });
+    }
+    
+    // Formatează perioada pentru afișare (ex: "Jan 2022 - Mar 2022")
+    const startDateObj = new Date(startDate);
+    const endDateObj = new Date(endDate);
+    const formattedPeriod = `${startDateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })} - ${endDateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}`;
     
     // Salvare informații despre fișier în baza de date
     const financialData = await FinancialData.create({
       filename: req.file.filename,
       original_filename: req.file.originalname,
       data_type: dataType || 'Balance Sheet',
-      data_period: dataPeriod || new Date(),
+      data_period: endDateObj, // Folosim data de sfârșit pentru sortare
+      period_start: startDateObj,
+      period_end: endDateObj,
+      period_display: formattedPeriod,
       file_path: req.file.path,
       uploaded_by: userId
     });
@@ -51,7 +64,7 @@ exports.getAllFinancialData = async (req, res) => {
     const financialData = await FinancialData.findAll({
       where: { uploaded_by: userId },
       include: [{ model: FinancialMetric, as: 'metrics' }],
-      order: [['createdAt', 'DESC']]
+      order: [['data_period', 'DESC']]
     });
     
     res.status(200).json({ financialData });
@@ -118,47 +131,100 @@ exports.deleteFinancialData = async (req, res) => {
 async function processSagaBalanceSheet(data, financialDataId) {
   const metrics = [];
   
+  // Examinează primele rânduri pentru a detecta formatul
+  console.log("Analizez structura fișierului Saga:", data.slice(0, 5));
+  
+  // Caută coloanele relevante în header
+  let headerRow = -1;
+  let debitFinalCol = -1;
+  let creditFinalCol = -1;
+  
+  // Caută rândul cu header-ul și coloanele relevante
+  for (let i = 0; i < Math.min(20, data.length); i++) {
+    const row = data[i];
+    if (!row || !Array.isArray(row)) continue;
+    
+    // Caută un rând care ar putea fi header (conține "Debit" și "Credit")
+    const rowStr = row.join(' ').toLowerCase();
+    if (rowStr.includes('debit') && rowStr.includes('credit')) {
+      headerRow = i;
+      // Găsește indexul coloanelor pentru sold final
+      for (let j = 0; j < row.length; j++) {
+        const cell = String(row[j]).toLowerCase();
+        if (cell.includes('debit') && cell.includes('final')) {
+          debitFinalCol = j;
+        }
+        if (cell.includes('credit') && cell.includes('final')) {
+          creditFinalCol = j;
+        }
+      }
+      break;
+    }
+  }
+  
+  console.log(`Header row: ${headerRow}, Debit final col: ${debitFinalCol}, Credit final col: ${creditFinalCol}`);
+  
+  // Dacă nu am găsit headerul sau coloanele necesare, folosește valori implicite
+  if (headerRow === -1 || debitFinalCol === -1 || creditFinalCol === -1) {
+    console.log("Nu am putut detecta formatul specific. Folosim valori implicite:");
+    // Presupunem că ultimele două coloane sunt debit final și credit final
+    debitFinalCol = data[0].length - 2;
+    creditFinalCol = data[0].length - 1;
+    console.log(`Folosesc debit col: ${debitFinalCol}, credit col: ${creditFinalCol}`);
+  }
+  
   // Căutăm conturile relevante pentru metricile financiare importante
-  let revenueAccounts = {}; // Conturi de venituri
-  let expenseAccounts = {}; // Conturi de cheltuieli
+  let revenueAccounts = {}; // Conturi de venituri (7xx)
+  let expenseAccounts = {}; // Conturi de cheltuieli (6xx)
   let assetAccounts = {};   // Conturi de active
   let liabilityAccounts = {}; // Conturi de datorii
   let taxAccounts = {};     // Conturi de impozite (69x)
 
   // Iteram prin datele din balanță pentru a extrage valorile conturilor
-  for (let i = 0; i < data.length; i++) {
+  for (let i = (headerRow !== -1 ? headerRow + 1 : 0); i < data.length; i++) {
     const row = data[i];
+    if (!row || !Array.isArray(row) || row.length <= Math.max(debitFinalCol, creditFinalCol)) continue;
     
-    // Verificăm dacă avem un cont valid
-    if (row && row.length >= 3 && typeof row[0] === 'string' && /^\d/.test(row[0])) {
-      const accountCode = row[0].toString();
-      const accountName = row[1]?.toString() || '';
-      const debitFinal = parseFloat(row[row.length - 2]) || 0;
-      const creditFinal = parseFloat(row[row.length - 1]) || 0;
-      
-      // Clasificăm conturile după cod
-      const firstDigit = accountCode.charAt(0);
-      
-      if (firstDigit === '7') {
-        // Conturi de venituri
-        revenueAccounts[accountCode] = { name: accountName, value: creditFinal - debitFinal };
-      } else if (firstDigit === '6') {
-        // Conturi de cheltuieli
-        if (accountCode.startsWith('69')) {
-          // Conturi de impozite și taxe
-          taxAccounts[accountCode] = { name: accountName, value: debitFinal - creditFinal };
-        } else {
-          expenseAccounts[accountCode] = { name: accountName, value: debitFinal - creditFinal };
-        }
-      } else if (['2', '3'].includes(firstDigit) || (firstDigit === '4' && debitFinal > creditFinal)) {
-        // Active
-        assetAccounts[accountCode] = { name: accountName, value: debitFinal - creditFinal };
-      } else if (firstDigit === '1' || (firstDigit === '4' && creditFinal > debitFinal)) {
-        // Datorii
-        liabilityAccounts[accountCode] = { name: accountName, value: creditFinal - debitFinal };
+    // Verifică dacă avem un cont valid (prima coloană începe cu un număr)
+    const accountCodeCell = row[0];
+    if (!accountCodeCell) continue;
+    
+    const accountCode = String(accountCodeCell).trim();
+    if (!/^\d/.test(accountCode)) continue; // Trebuie să înceapă cu un digit
+    
+    // Obține nume cont și valori
+    const accountName = row[1] ? String(row[1]).trim() : '';
+    const debitFinal = parseFloat(row[debitFinalCol]) || 0;
+    const creditFinal = parseFloat(row[creditFinalCol]) || 0;
+    
+    console.log(`Cont ${accountCode} (${accountName}): debit=${debitFinal}, credit=${creditFinal}`);
+    
+    // Clasificăm conturile după cod
+    if (accountCode.startsWith('7')) {
+      // Conturi de venituri
+      revenueAccounts[accountCode] = { name: accountName, value: creditFinal - debitFinal };
+    } else if (accountCode.startsWith('6')) {
+      if (accountCode.startsWith('69')) {
+        // Conturi de impozite și taxe
+        taxAccounts[accountCode] = { name: accountName, value: debitFinal - creditFinal };
+      } else {
+        // Alte cheltuieli
+        expenseAccounts[accountCode] = { name: accountName, value: debitFinal - creditFinal };
       }
+    } else if (['2', '3'].includes(accountCode.charAt(0)) || 
+               (accountCode.charAt(0) === '4' && debitFinal > creditFinal)) {
+      // Active
+      assetAccounts[accountCode] = { name: accountName, value: debitFinal - creditFinal };
+    } else if (accountCode.charAt(0) === '1' || 
+               (accountCode.charAt(0) === '4' && creditFinal > debitFinal)) {
+      // Datorii
+      liabilityAccounts[accountCode] = { name: accountName, value: creditFinal - debitFinal };
     }
   }
+  
+  console.log("Conturi venituri:", Object.keys(revenueAccounts));
+  console.log("Conturi cheltuieli:", Object.keys(expenseAccounts));
+  console.log("Conturi taxe:", Object.keys(taxAccounts));
 
   // Calculul metricilor financiare conform standardelor contabile românești
   
@@ -203,6 +269,15 @@ async function processSagaBalanceSheet(data, financialDataId) {
   // 7. Profit net (profit operațional - impozite)
   const netProfit = operatingProfit - taxes;
   const netProfitMargin = revenue > 0 ? (netProfit / revenue) * 100 : 0;
+  
+  console.log("Metrici calculate:");
+  console.log(`Revenue: ${revenue}`);
+  console.log(`Cost of Goods Sold: ${costOfGoodsSold}`);
+  console.log(`Gross Margin: ${grossMargin} (${grossMarginPercentage}%)`);
+  console.log(`Operating Expenses: ${operatingExpenses}`);
+  console.log(`Operating Profit: ${operatingProfit}`);
+  console.log(`Taxes: ${taxes}`);
+  console.log(`Net Profit: ${netProfit} (${netProfitMargin}%)`);
   
   // Salvăm metricile calculate în baza de date
   try {
@@ -278,3 +353,10 @@ async function processSagaBalanceSheet(data, financialDataId) {
   
   return metrics;
 }
+
+module.exports = {
+  uploadFinancialData: exports.uploadFinancialData,
+  getAllFinancialData: exports.getAllFinancialData,
+  getFinancialDataById: exports.getFinancialDataById,
+  deleteFinancialData: exports.deleteFinancialData
+};
