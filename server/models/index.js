@@ -1,3 +1,6 @@
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+
 const User = require('./User');
 const Task = require('./Task');
 const Goal = require('./Goal');

@@ -1,4 +1,6 @@
-// În models/FinancialData.js
+const { DataTypes } = require('sequelize');
+const { sequelize } = require('../config/database');
+
 const FinancialData = sequelize.define('FinancialData', {
   id: {
     type: DataTypes.INTEGER,
@@ -41,3 +43,5 @@ const FinancialData = sequelize.define('FinancialData', {
 }, {
   timestamps: true
 });
+
+module.exports = FinancialData;
