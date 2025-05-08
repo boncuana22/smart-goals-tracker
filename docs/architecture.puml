@@ -1,0 +1,73 @@
+@startuml
+top to bottom direction
+skinparam componentStyle rectangle
+skinparam defaultTextAlignment center
+
+' Frontend (sus)
+package "Frontend (React App)" {
+    [App.jsx]
+    [Pages]
+    [AuthContext.jsx]
+    [routes.jsx]
+
+    package "API Services" {
+        [authService.jsx]
+        [goalService.jsx]
+        [taskService.jsx]
+        [kpiService.jsx]
+        [calendarService.jsx]
+        [financialService.jsx]
+    }
+}
+
+[App.jsx] --> [API Services]
+[App.jsx] --> [routes.jsx]
+[App.jsx] --> [Pages]
+[App.jsx] --> [AuthContext.jsx]
+[API Services] --> [server.js] : API Requests
+
+' Backend (jos)
+package "Backend (Express.js Server)" {
+    [server.js]
+
+    package "Routes" {
+        [authRoutes.js]
+        [goalRoutes.js]
+        [taskRoutes.js]
+        [kpiRoutes.js]
+        [calendarRoutes.js]
+        [financialRoutes.js]
+    }
+
+    package "Controllers" {
+        [authController.js]
+        [goalController.js]
+        [taskController.js]
+        [kpiController.js]
+        [calendarController.js]
+        [financialController.js]
+    }
+
+    package "Models" {
+        [User.js]
+        [Goal.js]
+        [Task.js]
+        [KPI.js]
+        [CalendarEvent.js]
+        [FinancialData.js]
+        [FinancialMetric.js]
+    }
+
+    package "Middleware" {
+        [authMiddleware.js]
+        [uploadMiddleware.js]
+    }
+}
+
+' Legături verticale clare
+[server.js] --> [Routes]
+[Routes] --> [Controllers]
+[Controllers] --> [Models]
+[server.js] --> [Middleware]
+
+@enduml

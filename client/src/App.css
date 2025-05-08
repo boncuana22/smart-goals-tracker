@@ -16,6 +16,7 @@ body {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
+  width: 100%;
 }
 
 .header {
@@ -25,6 +26,7 @@ body {
   padding: 0.8rem 1.5rem;
   background-color: #343a40;
   color: white;
+  width: 100%;
 }
 
 .header-left {
@@ -38,21 +40,35 @@ body {
   margin-left: 1rem;
 }
 
+.header-right {
+  display: flex;
+  align-items: center;
+}
+
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
 .sidebar-toggle {
   background: none;
   border: none;
   color: white;
   font-size: 1.5rem;
   cursor: pointer;
+  padding: 0.5rem;
 }
 
 .container-fluid {
   display: flex;
   flex: 1;
+  width: 100%;
 }
 
 .row {
   display: flex;
+  flex: 1;
   width: 100%;
 }
 
@@ -62,6 +78,8 @@ body {
   color: white;
   padding: 1rem 0;
   transition: width 0.3s ease;
+  flex-shrink: 0;
+  height: 100%;
 }
 
 .sidebar.closed {
@@ -69,15 +87,31 @@ body {
   overflow: hidden;
 }
 
+.sidebar-nav {
+  width: 100%;
+}
+
+.nav {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  width: 100%;
+}
+
+.nav-item {
+  width: 100%;
+}
+
 .nav-link {
   color: rgba(255, 255, 255, 0.75);
   text-decoration: none;
   padding: 0.75rem 1.5rem;
   display: block;
+  width: 100%;
+  transition: all 0.2s ease;
 }
 
-.nav-link:hover,
-.nav-link.active {
+.nav-link:hover, .nav-link.active {
   color: white;
   background-color: rgba(255, 255, 255, 0.1);
 }
@@ -85,15 +119,17 @@ body {
 .main-content {
   flex: 1;
   padding: 1.5rem;
-  transition: margin-left 0.3s ease;
+  transition: all 0.3s ease;
+  width: 100%;
+  max-width: 100%;
 }
 
 .main-content.with-sidebar {
-  margin-left: 250px;
+  width: calc(100% - 250px);
 }
 
 .main-content.full-width {
-  margin-left: 0;
+  width: 100%;
 }
 
 /* Authentication forms */
@@ -193,6 +229,7 @@ body {
   grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
   gap: 1.5rem;
   margin-top: 2rem;
+  width: 100%;
 }
 
 .summary-card {
@@ -230,4 +267,24 @@ body {
   max-width: 500px;
   margin: 0 auto 2rem;
   color: #6c757d;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .main-content.with-sidebar {
+    width: 100%;
+    margin-left: 0;
+  }
+  
+  .sidebar {
+    position: fixed;
+    top: 60px;
+    left: 0;
+    height: calc(100vh - 60px);
+    z-index: 1000;
+  }
+  
+  .header-left h1 {
+    font-size: 1.2rem;
+  }
 }

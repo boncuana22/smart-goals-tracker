@@ -1,0 +1,120 @@
+.
+├── README.md
+├── client
+│   ├── README.md
+│   ├── eslint.config.js
+│   ├── index.html
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── public
+│   │   └── vite.svg
+│   ├── src
+│   │   ├── App.css
+│   │   ├── App.jsx
+│   │   ├── api
+│   │   │   ├── authService.jsx
+│   │   │   ├── axios.jsx
+│   │   │   ├── calendarService.jsx
+│   │   │   ├── financialService.jsx
+│   │   │   ├── goalService.jsx
+│   │   │   ├── kpiService.jsx
+│   │   │   └── taskService.jsx
+│   │   ├── assets
+│   │   │   └── react.svg
+│   │   ├── components
+│   │   │   ├── auth
+│   │   │   ├── calendar
+│   │   │   │   ├── EventForm.css
+│   │   │   │   └── EventForm.jsx
+│   │   │   ├── common
+│   │   │   │   ├── Layout.jsx
+│   │   │   │   ├── Modal.css
+│   │   │   │   └── Modal.jsx
+│   │   │   ├── dashboard
+│   │   │   ├── financial
+│   │   │   │   ├── FileUploadForm.css
+│   │   │   │   ├── FileUploadForm.jsx
+│   │   │   │   ├── FinancialDataCard.css
+│   │   │   │   ├── FinancialDataCard.jsx
+│   │   │   │   ├── FinancialMetricsChart.css
+│   │   │   │   └── FinancialMetricsChart.jsx
+│   │   │   ├── goals
+│   │   │   │   ├── GoalCard.css
+│   │   │   │   ├── GoalCard.jsx
+│   │   │   │   ├── GoalDetail.css
+│   │   │   │   ├── GoalDetail.jsx
+│   │   │   │   ├── GoalForm.css
+│   │   │   │   ├── GoalForm.jsx
+│   │   │   │   ├── KPICard.css
+│   │   │   │   ├── KPICard.jsx
+│   │   │   │   ├── KPIForm.css
+│   │   │   │   └── KPIForm.jsx
+│   │   │   └── tasks
+│   │   │       ├── KanbanColumn.css
+│   │   │       ├── KanbanColumn.jsx
+│   │   │       ├── TaskCard.css
+│   │   │       ├── TaskCard.jsx
+│   │   │       ├── TaskForm.css
+│   │   │       └── TaskForm.jsx
+│   │   ├── context
+│   │   │   └── AuthContext.jsx
+│   │   ├── hooks
+│   │   ├── index.css
+│   │   ├── main.jsx
+│   │   ├── pages
+│   │   │   ├── Calendar.css
+│   │   │   ├── Calendar.jsx
+│   │   │   ├── Dashboard.css
+│   │   │   ├── Dashboard.jsx
+│   │   │   ├── Financial.css
+│   │   │   ├── Financial.jsx
+│   │   │   ├── GoalDetails.css
+│   │   │   ├── GoalDetails.jsx
+│   │   │   ├── Goals.css
+│   │   │   ├── Goals.jsx
+│   │   │   ├── Login.jsx
+│   │   │   ├── NotFound.jsx
+│   │   │   ├── Register.jsx
+│   │   │   ├── Tasks.css
+│   │   │   └── Tasks.jsx
+│   │   ├── routes.jsx
+│   │   └── utils
+│   └── vite.config.js
+├── server
+│   ├── config
+│   │   └── database.js
+│   ├── controllers
+│   │   ├── authController.js
+│   │   ├── calendarController.js
+│   │   ├── financialController.js
+│   │   ├── goalController.js
+│   │   ├── kpiController.js
+│   │   └── taskController.js
+│   ├── middleware
+│   │   ├── authMiddleware.js
+│   │   └── uploadMiddleware.js
+│   ├── models
+│   │   ├── CalendarEvent.js
+│   │   ├── FinancialData.js
+│   │   ├── FinancialMetric.js
+│   │   ├── Goal.js
+│   │   ├── KPI.js
+│   │   ├── Task.js
+│   │   ├── User.js
+│   │   └── index.js
+│   ├── package-lock.json
+│   ├── package.json
+│   ├── routes
+│   │   ├── authRoutes.js
+│   │   ├── calendarRoutes.js
+│   │   ├── financialRoutes.js
+│   │   ├── goalRoutes.js
+│   │   ├── kpiRoutes.js
+│   │   └── taskRoutes.js
+│   ├── server.js
+│   ├── uploads
+│   │   └── financial-1744554246975-777570779.xlsx
+│   └── utils
+└── structure.txt
+
+26 directories, 92 files

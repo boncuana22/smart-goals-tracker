@@ -1,276 +1,292 @@
 .dashboard-container {
-    padding: 20px;
-  }
-  
-  .dashboard-container h2 {
-    margin-top: 0;
-    margin-bottom: 24px;
-  }
-  
-  .dashboard-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 24px;
-  }
-  
-  .dashboard-card {
-    background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 16px;
-  }
-  
-  .card-header h3 {
-    margin: 0;
-    font-size: 1.1rem;
-    color: #333;
-  }
-  
-  .btn-link {
-    background: none;
-    border: none;
-    color: #007bff;
-    cursor: pointer;
-    font-size: 0.9rem;
-    padding: 0;
-  }
-  
-  .btn-link:hover {
-    text-decoration: underline;
-  }
-  
-  /* Task Summary */
+  padding: 20px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-container h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+}
+
+.dashboard-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.dashboard-card {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.card-header h3 {
+  margin: 0;
+  font-size: 1.1rem;
+  color: #333;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+  font-size: 0.9rem;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
+}
+
+/* Task Summary */
+.task-stats, .goal-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.stat-item {
+  text-align: center;
+}
+
+.stat-value {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #333;
+}
+
+.stat-label {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+.progress-summary {
+  margin-top: 20px;
+}
+
+.progress-bar {
+  height: 8px;
+  background-color: #e9ecef;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background-color: #28a745;
+  border-radius: 4px;
+}
+
+.progress-text {
+  text-align: right;
+  font-size: 0.8rem;
+  color: #666;
+  margin-top: 4px;
+}
+
+/* Goal Summary */
+.goal-completion {
+  margin-top: 20px;
+}
+
+.completion-chart {
+  height: 16px;
+  background-color: #e9ecef;
+  border-radius: 8px;
+  display: flex;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.chart-segment {
+  height: 100%;
+}
+
+.chart-segment.completed {
+  background-color: #28a745;
+}
+
+.chart-segment.in-progress {
+  background-color: #007bff;
+}
+
+.chart-segment.not-started {
+  background-color: #6c757d;
+}
+
+.chart-segment.on-hold {
+  background-color: #ffc107;
+}
+
+.chart-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.8rem;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  margin-right: 6px;
+}
+
+.legend-color.completed {
+  background-color: #28a745;
+}
+
+.legend-color.in-progress {
+  background-color: #007bff;
+}
+
+.legend-color.not-started {
+  background-color: #6c757d;
+}
+
+.legend-color.on-hold {
+  background-color: #ffc107;
+}
+
+.legend-label {
+  color: #666;
+}
+
+/* Financial Overview */
+.key-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.metric-card {
+  padding: 12px;
+  background-color: #f8f9fa;
+  border-radius: 6px;
+}
+
+.metric-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.metric-name {
+  font-size: 0.8rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.metric-period {
+  font-size: 0.7rem;
+  color: #999;
+}
+
+.metric-value {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 4px;
+}
+
+.metric-change {
+  font-size: 0.8rem;
+}
+
+.metric-change.positive {
+  color: #28a745;
+}
+
+.metric-change.negative {
+  color: #dc3545;
+}
+
+.recent-uploads h4 {
+  font-size: 1rem;
+  margin-top: 0;
+  margin-bottom: 12px;
+  color: #333;
+}
+
+.uploads-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.upload-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #eee;
+}
+
+.upload-item:last-child {
+  border-bottom: none;
+}
+
+.upload-type {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.upload-date {
+  font-size: 0.8rem;
+  color: #666;
+}
+
+/* Empty States */
+.empty-message {
+  text-align: center;
+  padding: 20px;
+  color: #666;
+}
+
+.empty-message p {
+  margin-bottom: 12px;
+}
+
+.btn-sm {
+  padding: 6px 12px;
+  font-size: 0.9rem;
+}
+
+.loading {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 200px;
+  color: #666;
+  font-size: 1.2rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
   .task-stats, .goal-stats {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 16px;
-  }
-  
-  .stat-item {
-    text-align: center;
-  }
-  
-  .stat-value {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: #333;
-  }
-  
-  .stat-label {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  .progress-summary {
-    margin-top: 20px;
-  }
-  
-  .progress-bar {
-    height: 8px;
-    background-color: #e9ecef;
-    border-radius: 4px;
-    overflow: hidden;
-  }
-  
-  .progress-fill {
-    height: 100%;
-    background-color: #28a745;
-    border-radius: 4px;
-  }
-  
-  .progress-text {
-    text-align: right;
-    font-size: 0.8rem;
-    color: #666;
-    margin-top: 4px;
-  }
-  
-  /* Goal Summary */
-  .goal-completion {
-    margin-top: 20px;
-  }
-  
-  .completion-chart {
-    height: 16px;
-    background-color: #e9ecef;
-    border-radius: 8px;
-    display: flex;
-    overflow: hidden;
-    margin-bottom: 12px;
-  }
-  
-  .chart-segment {
-    height: 100%;
-  }
-  
-  .chart-segment.completed {
-    background-color: #28a745;
-  }
-  
-  .chart-segment.in-progress {
-    background-color: #007bff;
-  }
-  
-  .chart-segment.not-started {
-    background-color: #6c757d;
-  }
-  
-  .chart-segment.on-hold {
-    background-color: #ffc107;
-  }
-  
-  .chart-legend {
-    display: flex;
     flex-wrap: wrap;
     gap: 16px;
   }
   
-  .legend-item {
-    display: flex;
-    align-items: center;
-    font-size: 0.8rem;
+  .stat-item {
+    flex: 1 1 40%;
   }
-  
-  .legend-color {
-    width: 12px;
-    height: 12px;
-    border-radius: 3px;
-    margin-right: 6px;
-  }
-  
-  .legend-color.completed {
-    background-color: #28a745;
-  }
-  
-  .legend-color.in-progress {
-    background-color: #007bff;
-  }
-  
-  .legend-color.not-started {
-    background-color: #6c757d;
-  }
-  
-  .legend-color.on-hold {
-    background-color: #ffc107;
-  }
-  
-  .legend-label {
-    color: #666;
-  }
-  
-  /* Financial Overview */
-  .key-metrics {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 16px;
-    margin-bottom: 24px;
-  }
-  
-  .metric-card {
-    padding: 12px;
-    background-color: #f8f9fa;
-    border-radius: 6px;
-  }
-  
-  .metric-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 8px;
-  }
-  
-  .metric-name {
-    font-size: 0.8rem;
-    color: #666;
-    font-weight: 500;
-  }
-  
-  .metric-period {
-    font-size: 0.7rem;
-    color: #999;
-  }
-  
-  .metric-value {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: #333;
-    margin-bottom: 4px;
-  }
-  
-  .metric-change {
-    font-size: 0.8rem;
-  }
-  
-  .metric-change.positive {
-    color: #28a745;
-  }
-  
-  .metric-change.negative {
-    color: #dc3545;
-  }
-  
-  .recent-uploads h4 {
-    font-size: 1rem;
-    margin-top: 0;
-    margin-bottom: 12px;
-    color: #333;
-  }
-  
-  .uploads-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .upload-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 8px 0;
-    border-bottom: 1px solid #eee;
-  }
-  
-  .upload-item:last-child {
-    border-bottom: none;
-  }
-  
-  .upload-type {
-    font-size: 0.9rem;
-    color: #333;
-  }
-  
-  .upload-date {
-    font-size: 0.8rem;
-    color: #666;
-  }
-  
-  /* Empty States */
-  .empty-message {
-    text-align: center;
-    padding: 20px;
-    color: #666;
-  }
-  
-  .empty-message p {
-    margin-bottom: 12px;
-  }
-  
-  .btn-sm {
-    padding: 6px 12px;
-    font-size: 0.9rem;
-  }
-  
-  .loading {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 200px;
-    color: #666;
-    font-size: 1.2rem;
-  }
+}
