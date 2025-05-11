@@ -11,6 +11,8 @@ const goalRoutes = require('./routes/goalRoutes');
 const financialRoutes = require('./routes/financialRoutes');
 const kpiRoutes = require('./routes/kpiRoutes');
 const calendarRoutes = require('./routes/calendarRoutes');
+const teamRoutes = require('./routes/teamRoutes');
+const userRoutes = require('./routes/userRoutes');
 
 // Inițializare Express
 const app = express();
@@ -31,6 +33,9 @@ app.use('/api/goals', goalRoutes);
 app.use('/api/financial', financialRoutes);
 app.use('/api/kpis', kpiRoutes);
 app.use('/api/calendar', calendarRoutes);
+app.use('/api/teams', teamRoutes);
+app.use('/api/users', userRoutes);
+
 
 // Rută de test
 app.get('/', (req, res) => {

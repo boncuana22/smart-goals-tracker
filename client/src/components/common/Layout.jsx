@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
+import './Layout.css'; 
 
 const Layout = ({ children }) => {
   const { user, logout } = useAuth();
@@ -13,87 +14,112 @@ const Layout = ({ children }) => {
     navigate('/login');
   };
 
-  const toggleSidebar = () => {
-    setSidebarOpen(!sidebarOpen);
-  };
-
   return (
-    <div className="layout">
-      {/* Header */}
-      <header className="header">
-        <div className="header-left">
-          <button className="sidebar-toggle" onClick={toggleSidebar}>
+    <div className="modern-layout">
+      {/* Sidebar */}
+      <div className={`modern-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
+        <div className="sidebar-logo">
+          <span>SMART</span>
+        </div>
+        <nav className="sidebar-nav">
+          <ul className="nav-items">
+            <li className="nav-item">
+              <Link
+                to="/dashboard"
+                className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
+              >
+                <i className="nav-icon fas fa-chart-bar"></i>
+                <span className="nav-text">Dashboard</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/tasks"
+                className={`nav-link ${location.pathname === '/tasks' ? 'active' : ''}`}
+              >
+                <i className="nav-icon fas fa-tasks"></i>
+                <span className="nav-text">Tasks</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/goals"
+                className={`nav-link ${location.pathname === '/goals' ? 'active' : ''}`}
+              >
+                <i className="nav-icon fas fa-bullseye"></i>
+                <span className="nav-text">SMART Goals</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/financial"
+                className={`nav-link ${location.pathname === '/financial' ? 'active' : ''}`}
+              >
+                <span className="nav-icon">💰</span>
+                <span className="nav-text">Financial</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/calendar"
+                className={`nav-link ${location.pathname === '/calendar' ? 'active' : ''}`}
+              >
+                <span className="nav-icon">📅</span>
+                <span className="nav-text">Calendar</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/profile"
+                className={`nav-link ${location.pathname === '/profile' ? 'active' : ''}`}
+              >
+                <i className="bi bi-person"></i> 
+                <span>Profile</span>
+              </Link>
+            </li>
+            <li className="nav-item">
+              <Link
+                to="/teams"
+                className={`nav-link ${location.pathname === '/teams' ? 'active' : ''}`}
+              >
+                <span className="nav-icon">👥</span>
+                <span className="nav-text">Teams</span>
+              </Link>
+            </li>
+            
+          </ul>
+        </nav>
+        <div className="sidebar-bottom">
+          <button className="logout-btn" onClick={handleLogout}>
+            <span className="nav-icon">🚪</span>
+            <span className="nav-text">Logout</span>
+          </button>
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="modern-content">
+        <header className="modern-header">
+          <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
             ☰
           </button>
-          <h1>SMART Goals Tracker</h1>
-        </div>
-        <div className="header-right">
-          {user && (
-            <div className="user-info">
-              <span>Welcome, {user.username}</span>
-              <button onClick={handleLogout} className="btn btn-outline-light">
-                Logout
-              </button>
-            </div>
-          )}
-        </div>
-      </header>
-
-      <div className="container-fluid">
-        <div className="row">
-          {/* Sidebar */}
-          <div className={`sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
-            <nav className="sidebar-nav">
-              <ul className="nav flex-column">
-                <li className="nav-item">
-                  <Link
-                    to="/dashboard"
-                    className={`nav-link ${location.pathname === '/dashboard' ? 'active' : ''}`}
-                  >
-                    Dashboard
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/tasks"
-                    className={`nav-link ${location.pathname === '/tasks' ? 'active' : ''}`}
-                  >
-                    Tasks
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/goals"
-                    className={`nav-link ${location.pathname === '/goals' ? 'active' : ''}`}
-                  >
-                    SMART Goals
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/financial"
-                    className={`nav-link ${location.pathname === '/financial' ? 'active' : ''}`}
-                  >
-                    Financial Data
-                  </Link>
-                </li>
-                <li className="nav-item">
-                  <Link
-                    to="/calendar"
-                    className={`nav-link ${location.pathname === '/calendar' ? 'active' : ''}`}
-                  >
-                    Calendar
-                  </Link>
-                </li>
-              </ul>
-            </nav>
+          <div className="header-search">
+            <input type="text" placeholder="Search..." />
           </div>
+          <div className="header-actions">
+            <button className="header-icon-btn">
+              <span className="notification-icon">🔔</span>
+              <span className="notification-badge">2</span>
+            </button>
+            <Link to="/profile" className="user-avatar">
+              <img src="/api/placeholder/32/32" alt={user?.username || 'User'} />
+            </Link>
+          </div>
+        </header>
 
-          {/* Main Content */}
-          <main className={`main-content ${sidebarOpen ? 'with-sidebar' : 'full-width'}`}>
-            {children}
-          </main>
-        </div>
+        <main className="content-area">
+          {children}
+        </main>
       </div>
     </div>
   );

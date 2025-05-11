@@ -1,0 +1,361 @@
+/* Updated color scheme with better contrast */
+:root {
+    --primary-bg: #121826;
+    --secondary-bg: #1e2a45;
+    --tertiary-bg: #2a3a5c;
+    --accent-color: #4d7cfe;
+    --accent-hover: #3a64d8;
+    --success-color: #34d399;
+    --warning-color: #fbbf24;
+    --danger-color: #ef4444;
+    --text-primary: #ffffff;
+    --text-secondary: #cbd5e1;
+    --border-color: rgba(255, 255, 255, 0.12);
+  }
+  
+  .profile-container {
+    padding: 1.5rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  .profile-header {
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-header h1 {
+    font-size: 1.8rem;
+    margin: 0;
+    color: var(--text-primary);
+  }
+  
+  .error-message {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger-color);
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1.5rem;
+  }
+  
+  .profile-content {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 1.5rem;
+  }
+  
+  /* Sidebar styles */
+  .profile-sidebar {
+    background-color: var(--secondary-bg);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+  
+  .profile-photo-container {
+    text-align: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+  }
+  
+  .profile-photo {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid var(--accent-color);
+  }
+  
+  .profile-photo-placeholder {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: var(--tertiary-bg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 3rem;
+    color: var(--text-primary);
+    margin: 0 auto;
+    border: 3px solid var(--accent-color);
+  }
+  
+  .photo-upload-button {
+    display: block;
+    background-color: var(--accent-color);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    margin: 1rem auto 0;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: background-color 0.2s;
+    width: fit-content;
+  }
+  
+  .photo-upload-button:hover {
+    background-color: var(--accent-hover);
+  }
+  
+  .hidden-input {
+    display: none;
+  }
+  
+  .uploading-indicator {
+    margin-top: 0.5rem;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+  
+  .profile-details {
+    text-align: center;
+  }
+  
+  .profile-details h2 {
+    margin: 0 0 0.25rem;
+    font-size: 1.5rem;
+    color: var(--text-primary);
+  }
+  
+  .profile-title {
+    color: var(--text-secondary);
+    margin: 0 0 1.5rem;
+    font-size: 0.95rem;
+  }
+  
+  .profile-info {
+    margin-bottom: 1.5rem;
+    text-align: left;
+  }
+  
+  .info-item {
+    margin-bottom: 0.75rem;
+  }
+  
+  .info-label {
+    display: block;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    margin-bottom: 0.25rem;
+  }
+  
+  .info-value {
+    color: var(--text-primary);
+    word-break: break-word;
+  }
+  
+  .edit-profile-button {
+    background-color: transparent;
+    border: 1px solid var(--accent-color);
+    color: var(--accent-color);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 100%;
+  }
+  
+  .edit-profile-button:hover {
+    background-color: var(--accent-color);
+    color: white;
+  }
+  
+  /* Main content styles */
+  .profile-main {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+  
+  .metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+  }
+  
+  .metric-card {
+    background-color: var(--secondary-bg);
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    text-align: center;
+  }
+  
+  .metric-value {
+    font-size: 1.8rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+  
+  .metric-label {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+  }
+  
+  .section {
+    background-color: var(--secondary-bg);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  
+  .section-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    color: var(--text-primary);
+  }
+  
+  .view-all-link {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-size: 0.875rem;
+  }
+  
+  .view-all-link:hover {
+    text-decoration: underline;
+  }
+  
+  .tasks-list, .goals-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .task-item, .goal-item {
+    background-color: var(--tertiary-bg);
+    border-radius: 0.5rem;
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+  }
+  
+  .task-status {
+    width: 0.75rem;
+    height: 0.75rem;
+    border-radius: 50%;
+    margin-right: 1rem;
+  }
+  
+  .status-to-do {
+    background-color: var(--text-secondary);
+  }
+  
+  .status-in-progress {
+    background-color: var(--warning-color);
+  }
+  
+  .status-completed {
+    background-color: var(--success-color);
+  }
+  
+  .status-not-started {
+    background-color: var(--text-secondary);
+  }
+  
+  .status-on-hold {
+    background-color: var(--danger-color);
+  }
+  
+  .task-details, .goal-info {
+    flex: 1;
+  }
+  
+  .task-title, .goal-title {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+  }
+  
+  .task-meta, .goal-meta {
+    display: flex;
+    gap: 1rem;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  .priority {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .priority-low {
+    background-color: rgba(52, 211, 153, 0.2);
+    color: var(--success-color);
+  }
+  
+  .priority-medium {
+    background-color: rgba(251, 191, 36, 0.2);
+    color: var(--warning-color);
+  }
+  
+  .priority-high {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: var(--danger-color);
+  }
+  
+  .goal-status {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+  }
+  
+  .goal-progress {
+    width: 150px;
+  }
+  
+  .progress-bar {
+    height: 0.5rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 0.25rem;
+    overflow: hidden;
+    margin-bottom: 0.25rem;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: var(--accent-color);
+  }
+  
+  .progress-value {
+    text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-secondary);
+  }
+  
+  .empty-state {
+    color: var(--text-secondary);
+    text-align: center;
+    padding: 2rem 0;
+  }
+  
+  /* Responsive adjustments */
+  @media (max-width: 992px) {
+    .profile-content {
+      grid-template-columns: 1fr;
+    }
+    
+    .metrics-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  
+  @media (max-width: 576px) {
+    .metrics-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .goal-item {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+    
+    .goal-progress {
+      width: 100%;
+      margin-top: 1rem;
+    }
+  }

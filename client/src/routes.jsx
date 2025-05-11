@@ -12,6 +12,9 @@ import Calendar from './pages/Calendar';
 import Financial from './pages/Financial';
 import NotFound from './pages/NotFound';
 import GoalDetails from './pages/GoalDetails';
+import UserProfile from './pages/UserProfile';
+import Teams from './pages/Teams';
+import TeamDetails from './pages/TeamDetails';
 
 // Route Guard pentru rute protejate
 const PrivateRoute = ({ children }) => {
@@ -106,6 +109,30 @@ const routes = [
     element: (
       <PrivateRoute>
         <GoalDetails />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: '/profile',
+    element: (
+      <PrivateRoute>
+        <UserProfile />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: '/teams',
+    element: (
+      <PrivateRoute>
+        <Teams />
+      </PrivateRoute>
+    )
+  },
+  {
+    path: '/teams/:id',
+    element: (
+      <PrivateRoute>
+        <TeamDetails />
       </PrivateRoute>
     )
   }

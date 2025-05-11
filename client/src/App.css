@@ -1,14 +1,31 @@
 /* Base styles */
-* {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+
+:root {
+  --primary-bg: #1a1f2c;
+  --secondary-bg: #252d3c;
+  --tertiary-bg: #323c52;
+  --accent-color: #4361EE;
+  --text-primary: #FFFFFF;
+  --text-secondary: #b8c4e0;
+  --success-color: #4CAF50;
+  --warning-color: #FF9800;
+  --danger-color: #F44336;
+  --border-color: rgba(255, 255, 255, 0.15);
 }
 
 body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   line-height: 1.6;
-  background-color: #f8f9fa;
+  background-color: var(--primary-bg);
+  color: var(--text-primary);
+  margin: 0;
+  padding: 0;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
 /* Layout */

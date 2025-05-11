@@ -32,7 +32,25 @@ const authService = {
 
   getProfile: async () => {
     return await api.get('/auth/profile');
+  },
+
+  uploadProfilePhoto: async (formData) => {
+    const response = await api.post('/auth/profile/photo', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data'
+      }
+    });
+    
+    if (response.data.user) {
+      // Update the user in local storage
+      const currentUser = authService.getCurrentUser();
+      const updatedUser = { ...currentUser, profilePhoto: response.data.user.profilePhoto };
+      localStorage.setItem('user', JSON.stringify(updatedUser));
+    }
+    
+    return response.data;
   }
+  
 };
 
 export default authService;

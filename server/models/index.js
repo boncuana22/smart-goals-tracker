@@ -8,6 +8,8 @@ const FinancialData = require('./FinancialData');
 const FinancialMetric = require('./FinancialMetric');
 const KPI = require('./KPI');
 const CalendarEvent = require('./CalendarEvent');
+const Team = require('./Team');
+const TeamMember = require('./TeamMember');
 
 // Relații User - Task
 User.hasMany(Task, { foreignKey: 'user_id', as: 'tasks' });
@@ -37,6 +39,14 @@ KPI.belongsTo(Goal, { foreignKey: 'goal_id' });
 User.hasMany(CalendarEvent, { foreignKey: 'user_id', as: 'calendarEvents' });
 CalendarEvent.belongsTo(User, { foreignKey: 'user_id' });
 
+// Relații User - Team
+User.belongsToMany(Team, { through: TeamMember, foreignKey: 'user_id' });
+Team.belongsToMany(User, { through: TeamMember, foreignKey: 'team_id' });
+
+// Relații User - Goal
+Team.hasMany(Goal, { foreignKey: 'team_id', as: 'goals' });
+Goal.belongsTo(Team, { foreignKey: 'team_id' });
+
 module.exports = {
   User,
   Task,
@@ -44,5 +54,7 @@ module.exports = {
   FinancialData,
   FinancialMetric,
   KPI,
-  CalendarEvent
+  CalendarEvent,
+  Team,
+  TeamMember
 };

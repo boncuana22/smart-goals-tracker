@@ -46,8 +46,13 @@ const Goal = sequelize.define('Goal', {
       max: 100
     },
     comment: 'Progress percentage from 0 to 100'
+  },
+  team_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'The team this goal belongs to'
   }
-  // created_by (FK) va fi adăugat prin asocieri
+  
 }, {
   timestamps: true
 });

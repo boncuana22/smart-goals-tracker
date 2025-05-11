@@ -1,0 +1,254 @@
+.teams-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+  }
+  
+  .teams-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+  }
+  
+  .teams-header h1 {
+    margin: 0;
+    font-size: 1.8rem;
+  }
+  
+  .create-team-btn {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .create-team-btn:hover {
+    background-color: #3a56d4;
+  }
+  
+  .teams-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+  }
+  
+  .team-card {
+    background-color: #1e2a45;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  .team-name {
+    margin: 0 0 0.5rem;
+    font-size: 1.25rem;
+  }
+  
+  .team-description {
+    margin: 0 0 1rem;
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    flex-grow: 1;
+  }
+  
+  .team-stats {
+    display: flex;
+    justify-content: space-around;
+    margin-bottom: 1.5rem;
+  }
+  
+  .stat {
+    text-align: center;
+  }
+  
+  .stat-value {
+    display: block;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .stat-label {
+    color: #cbd5e1;
+    font-size: 0.8rem;
+  }
+  
+  .view-team-btn {
+    background-color: transparent;
+    border: 1px solid #4361ee;
+    color: #4361ee;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .view-team-btn:hover {
+    background-color: #4361ee;
+    color: white;
+  }
+  
+  .no-teams-message {
+    grid-column: 1 / -1;
+    background-color: #1e2a45;
+    border-radius: 0.75rem;
+    padding: 3rem 1.5rem;
+    text-align: center;
+  }
+  
+  .no-teams-message p {
+    margin: 0 0 1.5rem;
+    color: #cbd5e1;
+  }
+  
+  .create-first-team-btn {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .create-first-team-btn:hover {
+    background-color: #3a56d4;
+  }
+  
+  /* Modal styles */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+  }
+  
+  .modal-content {
+    background-color: #1e2a45;
+    border-radius: 0.75rem;
+    width: 100%;
+    max-width: 500px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    overflow-y: auto;
+    max-height: 90vh;
+  }
+  
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .modal-header h2 {
+    margin: 0;
+    font-size: 1.25rem;
+  }
+  
+  .close-modal-btn {
+    background: none;
+    border: none;
+    color: #cbd5e1;
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+  }
+  
+  .form-group {
+    margin-bottom: 1.5rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #cbd5e1;
+  }
+  
+  .form-group input,
+  .form-group textarea,
+  .form-group select {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #2a3a5c;
+    background-color: #121826;
+    color: white;
+    font-size: 0.9rem;
+  }
+  
+  .form-group textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+  }
+  
+  .cancel-btn {
+    background-color: transparent;
+    border: 1px solid #cbd5e1;
+    color: #cbd5e1;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .cancel-btn:hover {
+    background-color: rgba(203, 213, 225, 0.1);
+  }
+  
+  .submit-btn {
+    background-color: #4361ee;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .submit-btn:hover {
+    background-color: #3a56d4;
+  }
+  
+  .submit-btn:disabled {
+    background-color: #3a56d4;
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  @media (max-width: 768px) {
+    .teams-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .teams-grid {
+      grid-template-columns: 1fr;
+    }
+    
+    .modal-content {
+      width: calc(100% - 2rem);
+      margin: 0 1rem;
+    }
+  }

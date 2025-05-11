@@ -28,6 +28,28 @@ const User = sequelize.define('User', {
   role: {
     type: DataTypes.ENUM('user', 'admin'),
     defaultValue: 'user'
+  },
+  name: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  title: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'Job title or role'
+  },
+  location: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  phone: {
+    type: DataTypes.STRING,
+    allowNull: true
+  },
+  profilePhoto: {
+    type: DataTypes.STRING,
+    allowNull: true,
+    comment: 'Path to profile photo'
   }
 }, {
   timestamps: true,

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './GoalForm.css';
+import teamService from "../../api/teamService";
 
 const GoalForm = ({ goal, onSubmit, onCancel }) => {
   const [formData, setFormData] = useState({
@@ -11,8 +12,29 @@ const GoalForm = ({ goal, onSubmit, onCancel }) => {
     relevant_reasoning: '',
     time_bound_date: '',
     status: 'Not Started',
-    progress: 0
+    progress: 0,
+    team_id: null
   });
+  
+  const [teams, setTeams] = useState([]);
+  const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    // Încarcă echipele utilizatorului
+    const fetchTeams = async () => {
+      try {
+        setLoading(true);
+        const response = await teamService.getUserTeams();
+        setTeams(response.teams || []);
+      } catch (error) {
+        console.error('Error fetching teams:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchTeams();
+  }, []);
 
   useEffect(() => {
     if (goal) {
@@ -32,17 +54,23 @@ const GoalForm = ({ goal, onSubmit, onCancel }) => {
         relevant_reasoning: goal.relevant_reasoning || '',
         time_bound_date: formattedDate,
         status: goal.status || 'Not Started',
-        progress: goal.progress || 0
+        progress: goal.progress || 0,
+        team_id: goal.team_id || null
       });
     }
   }, [goal]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
+    
     if (name === 'progress') {
       // Ensure progress is between 0 and 100
       const progress = Math.min(100, Math.max(0, parseInt(value) || 0));
       setFormData({ ...formData, progress });
+    } else if (name === 'team_id') {
+      // Convertește string-ul gol la null sau numărul la întreg
+      const team_id = value === '' ? null : parseInt(value);
+      setFormData({ ...formData, team_id });
     } else {
       setFormData({ ...formData, [name]: value });
     }
@@ -122,6 +150,25 @@ const GoalForm = ({ goal, onSubmit, onCancel }) => {
                 className="form-control"
               />
             </div>
+          </div>
+          
+          {/* Câmp pentru selectarea echipei */}
+          <div className="form-group">
+            <label htmlFor="team_id">Team (Optional)</label>
+            <select
+              id="team_id"
+              name="team_id"
+              value={formData.team_id || ''}
+              onChange={handleChange}
+              className="form-control"
+              disabled={loading}
+            >
+              <option value="">No Team</option>
+              {teams.map(team => (
+                <option key={team.id} value={team.id}>{team.name}</option>
+              ))}
+            </select>
+            {loading && <div className="form-helper">Loading teams...</div>}
           </div>
         </div>
         
