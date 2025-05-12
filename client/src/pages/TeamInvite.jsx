@@ -73,29 +73,53 @@ const TeamInvite = () => {
       setIsLoading(true);
       setError('');
       
+      console.log('🚀 Starting invitation acceptance...');
+      console.log('🔍 Registration data:', {
+        username: registrationData.username,
+        name: registrationData.name,
+        password: registrationData.password,
+        confirmPassword: registrationData.confirmPassword
+      });
+      
       // If user is already logged in with matching email
       if (user && user.email === invitation.email) {
+        console.log('✅ User already logged in, accepting directly...');
         await teamService.acceptInvitation(token, {});
         navigate('/teams');
         return;
       }
       
       // Check password match for new users
-      if (registrationData.password !== registrationData.confirmPassword) {
+      const passwordsMatch = registrationData.password === registrationData.confirmPassword;
+      console.log('🔍 Passwords match?', passwordsMatch);
+      console.log('🔍 Password:', registrationData.password);
+      console.log('🔍 Confirm Password:', registrationData.confirmPassword);
+      
+      if (!passwordsMatch) {
+        console.log('❌ Frontend validation: Passwords do not match');
         setError('Passwords do not match');
         setIsLoading(false);
         return;
       }
       
+      console.log('✅ Frontend validation passed, sending to server...');
+      
       // Accept invitation with registration data for new users
-      const response = await teamService.acceptInvitation(token, {
+      const dataToSend = {
         username: registrationData.username,
         password: registrationData.password,
         name: registrationData.name
-      });
+      };
+      
+      console.log('📤 Sending data to server:', dataToSend);
+      
+      const response = await teamService.acceptInvitation(token, dataToSend);
+      
+      console.log('✅ Server response received:', response);
       
       // Auto login the user
       if (response.token) {
+        console.log('🔑 Auto-logging in user...');
         await login({
           email: invitation.email,
           password: registrationData.password
@@ -103,9 +127,12 @@ const TeamInvite = () => {
       }
       
       // Navigate to teams page
+      console.log('📍 Navigating to teams page...');
       navigate('/teams');
     } catch (err) {
-      console.error('Error accepting invitation:', err);
+      console.error('❌ Error in handleAcceptInvitation:', err);
+      console.error('❌ Error response:', err.response?.data);
+      console.error('❌ Error status:', err.response?.status);
       setError(err.response?.data?.message || 'Failed to accept invitation');
       setIsLoading(false);
     }

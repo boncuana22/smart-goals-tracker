@@ -1,199 +1,188 @@
-import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import Layout from '../components/common/Layout';
-import GoalDetail from '../components/goals/GoalDetail';
-import goalService from '../api/goalService';
-import kpiService from '../api/kpiService';
-import taskService from '../api/taskService';
-import './GoalDetails.css';
+import React, { useState } from 'react';
+import KPICard from './KPICard';
+import KPIForm from './KPIForm';
+import Modal from '../common/Modal';
+import FinancialKPISection from './FinancialKpiSection';
+import './GoalDetail.css';
 
-const GoalDetails = () => {
-  const { id } = useParams();
-  const navigate = useNavigate();
-  const [goal, setGoal] = useState(null);
-  const [relatedTasks, setRelatedTasks] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState('');
+const GoalDetail = ({ 
+  goal, 
+  relatedTasks, 
+  onAddKPI, 
+  onEditKPI, 
+  onDeleteKPI, 
+  onUpdateKPI,
+  onKPIsUpdated 
+}) => {
+  const [isKPIModalOpen, setIsKPIModalOpen] = useState(false);
+  const [currentKPI, setCurrentKPI] = useState(null);
 
-  useEffect(() => {
-    if (id) {
-      loadGoalData(id);
-    }
-  }, [id]);
-
-  const loadGoalData = async (goalId) => {
-    setIsLoading(true);
-    setError('');
-    try {
-      // Încărcarea datelor pentru obiectiv
-      const response = await goalService.getGoalById(goalId);
-      if (!response.goal) {
-        throw new Error('Goal not found');
-      }
-      
-      setGoal(response.goal);
-      
-      // Încărcarea task-urilor asociate
-      try {
-        const tasksResponse = await taskService.getAllTasks();
-        const filtered = tasksResponse.tasks.filter(task => task.goal_id === parseInt(goalId));
-        setRelatedTasks(filtered);
-      } catch (err) {
-        console.error('Error loading related tasks:', err);
-      }
-    } catch (err) {
-      console.error('Error loading goal:', err);
-      setError('Failed to load goal details. The goal may not exist or there was a connection error.');
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const handleBackToList = () => {
-    navigate('/goals');
-  };
-
-  const handleAddKPI = async (kpiData) => {
-    try {
-      const data = { ...kpiData, goal_id: id };
-      const response = await kpiService.createKPI(data);
-      
-      // Actualizare stare
-      setGoal({
-        ...goal,
-        kpis: [...(goal.kpis || []), response.kpi]
-      });
-    } catch (err) {
-      console.error('Error adding KPI:', err);
-      alert('Failed to add KPI. Please try again.');
-    }
-  };
-
-  const handleEditKPI = async (kpiId, kpiData) => {
-    try {
-      const response = await kpiService.updateKPI(kpiId, kpiData);
-      
-      // Actualizare stare
-      setGoal({
-        ...goal,
-        kpis: goal.kpis.map(kpi => 
-          kpi.id === kpiId ? response.kpi : kpi
-        )
-      });
-    } catch (err) {
-      console.error('Error updating KPI:', err);
-      alert('Failed to update KPI. Please try again.');
-    }
-  };
-
-  const handleDeleteKPI = async (kpiId) => {
-    if (!window.confirm('Are you sure you want to delete this KPI?')) {
-      return;
-    }
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No date set';
     
-    try {
-      await kpiService.deleteKPI(kpiId);
-      
-      // Actualizare stare
-      setGoal({
-        ...goal,
-        kpis: goal.kpis.filter(kpi => kpi.id !== kpiId)
-      });
-    } catch (err) {
-      console.error('Error deleting KPI:', err);
-      alert('Failed to delete KPI. Please try again.');
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    });
+  };
+
+  const getStatusClass = () => {
+    switch (goal.status) {
+      case 'Not Started':
+        return 'status-not-started';
+      case 'In Progress':
+        return 'status-in-progress';
+      case 'Completed':
+        return 'status-completed';
+      case 'On Hold':
+        return 'status-on-hold';
+      default:
+        return '';
     }
   };
 
-  const handleUpdateKPIValue = async (kpiId, value) => {
-    try {
-      const response = await kpiService.updateKPIValue(kpiId, value);
-      
-      // Actualizare stare KPI
-      const updatedKPIs = goal.kpis.map(kpi => 
-        kpi.id === kpiId ? { ...kpi, current_value: value } : kpi
-      );
-      
-      // Actualizare stare goal (progres)
-      setGoal({
-        ...goal,
-        kpis: updatedKPIs,
-        progress: response.goal ? response.goal.progress : goal.progress
-      });
-    } catch (err) {
-      console.error('Error updating KPI value:', err);
-      // Nu afișăm un alert pentru această operație pentru a nu întrerupe experiența utilizatorului
-    }
+  const handleAddKPI = () => {
+    setCurrentKPI(null);
+    setIsKPIModalOpen(true);
   };
 
-  // Handle KPIs update after syncing with financial data
-  const handleKPIsUpdated = async () => {
+  const handleEditKPI = (kpi) => {
+    setCurrentKPI(kpi);
+    setIsKPIModalOpen(true);
+  };
+
+  const handleSubmitKPI = async (formData) => {
     try {
-      // Reload goal data to get updated KPIs
-      const response = await goalService.getGoalById(id);
-      if (response.goal) {
-        setGoal(response.goal);
+      if (currentKPI) {
+        await onEditKPI(currentKPI.id, formData);
+      } else {
+        await onAddKPI(formData);
       }
-    } catch (err) {
-      console.error('Error reloading goal after KPI sync:', err);
+      setIsKPIModalOpen(false);
+    } catch (error) {
+      console.error('Error saving KPI:', error);
     }
   };
-
-  if (isLoading) {
-    return (
-      <Layout>
-        <div className="loading">Loading goal details...</div>
-      </Layout>
-    );
-  }
-
-  if (error) {
-    return (
-      <Layout>
-        <div className="goal-details-container">
-          <div className="alert alert-danger">{error}</div>
-          <button className="btn btn-primary" onClick={handleBackToList}>
-            Back to Goals
-          </button>
-        </div>
-      </Layout>
-    );
-  }
 
   if (!goal) {
-    return (
-      <Layout>
-        <div className="goal-details-container">
-          <div className="alert alert-warning">Goal not found</div>
-          <button className="btn btn-primary" onClick={handleBackToList}>
-            Back to Goals
-          </button>
-        </div>
-      </Layout>
-    );
+    return <div>Loading goal details...</div>;
   }
 
   return (
-    <Layout>
-      <div className="goal-details-container">
-        <div className="goal-details-header">
-          <button className="btn btn-secondary" onClick={handleBackToList}>
-            &larr; Back to Goals
+    <div className="goal-detail">
+      <div className="goal-detail-header">
+        <h2>{goal.title}</h2>
+        <span className={`goal-status ${getStatusClass()}`}>
+          {goal.status}
+        </span>
+      </div>
+
+      <div className="goal-progress-section">
+        <h3>Progress</h3>
+        <div className="goal-progress-container">
+          <div className="goal-progress-bar">
+            <div 
+              className="goal-progress-fill" 
+              style={{ width: `${goal.progress || 0}%` }}
+            ></div>
+          </div>
+          <span className="goal-progress-value">{goal.progress || 0}%</span>
+        </div>
+        {goal.time_bound_date && (
+          <p className="goal-deadline">
+            Deadline: {formatDate(goal.time_bound_date)}
+          </p>
+        )}
+      </div>
+
+      <div className="goal-details-section">
+        <h3>SMART Criteria</h3>
+        <div className="smart-criteria">
+          <div className="criteria-item">
+            <h4>Specific</h4>
+            <p>{goal.specific_details || 'Not specified'}</p>
+          </div>
+          <div className="criteria-item">
+            <h4>Measurable</h4>
+            <p>{goal.measurable_metrics || 'Not specified'}</p>
+          </div>
+          <div className="criteria-item">
+            <h4>Achievable</h4>
+            <p>{goal.achievable_factors || 'Not specified'}</p>
+          </div>
+          <div className="criteria-item">
+            <h4>Relevant</h4>
+            <p>{goal.relevant_reasoning || 'Not specified'}</p>
+          </div>
+        </div>
+        {goal.description && (
+          <div className="criteria-item">
+            <h4>Description</h4>
+            <p>{goal.description}</p>
+          </div>
+        )}
+      </div>
+
+      <div className="goal-kpis-section">
+        <div className="section-header">
+          <h3>Key Performance Indicators</h3>
+          <button className="btn btn-primary" onClick={handleAddKPI}>
+            Add KPI
           </button>
         </div>
-        
-        <GoalDetail 
-          goal={goal}
-          relatedTasks={relatedTasks}
-          onAddKPI={handleAddKPI}
-          onEditKPI={handleEditKPI}
-          onDeleteKPI={handleDeleteKPI}
-          onUpdateKPI={handleUpdateKPIValue}
-          onKPIsUpdated={handleKPIsUpdated}
-        />
+
+        {goal.kpis && goal.kpis.length > 0 ? (
+          <div className="kpi-list">
+            {goal.kpis.map(kpi => (
+              <KPICard 
+                key={kpi.id}
+                kpi={kpi}
+                onEdit={handleEditKPI}
+                onDelete={onDeleteKPI}
+                onUpdateValue={onUpdateKPI}
+              />
+            ))}
+          </div>
+        ) : (
+          <div className="empty-kpis">
+            No KPIs defined for this goal yet.
+          </div>
+        )}
       </div>
-    </Layout>
+
+      {/* Financial KPIs Section */}
+      <FinancialKPISection 
+        kpis={goal.kpis || []}
+        goalId={goal.id}
+        onAddKPI={onAddKPI}
+        onKPIsUpdated={onKPIsUpdated}
+      />
+
+      {relatedTasks && relatedTasks.length > 0 && (
+        <div className="goal-tasks-section">
+          <h3>Related Tasks</h3>
+          <div className="tasks-list">
+            {relatedTasks.map(task => (
+              <div key={task.id} className="related-task">
+                <span className="task-status-badge">{task.status}</span>
+                <span className="task-title">{task.title}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <Modal isOpen={isKPIModalOpen} onClose={() => setIsKPIModalOpen(false)}>
+        <KPIForm 
+          kpi={currentKPI}
+          onSubmit={handleSubmitKPI}
+          onCancel={() => setIsKPIModalOpen(false)}
+        />
+      </Modal>
+    </div>
   );
 };
 
-export default GoalDetails;
+export default GoalDetail;

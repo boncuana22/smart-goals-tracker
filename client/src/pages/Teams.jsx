@@ -63,9 +63,12 @@ const Teams = () => {
   const handleSendInvitation = async (e) => {
     e.preventDefault();
     if (!inviteEmail.trim() || !selectedTeam) return;
-
+  
     try {
       setLoading(true);
+      
+      // ✅ AICI FACE CEREREA CĂTRE API!
+      await teamService.inviteToTeam(selectedTeam.id, { email: inviteEmail });
       
       setInviteStatus({
         message: 'Invitation sent successfully!',

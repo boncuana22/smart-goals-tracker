@@ -1,12 +1,29 @@
-const { Goal, Task, KPI, User } = require('../models');
+const { Goal, Task, KPI, User, TeamMember } = require('../models');
+const { Op } = require('sequelize');
 
 // Obținere toate obiectivele
 exports.getAllGoals = async (req, res) => {
   try {
     const userId = req.user.id;
     
+    // Găsește toate echipele utilizatorului
+    const userTeams = await TeamMember.findAll({
+      where: { user_id: userId },
+      attributes: ['team_id']
+    });
+    
+    const teamIds = userTeams.map(tm => tm.team_id);
+    
+    // Include goal-urile create de user + goal-urile echipelor
+    const whereClause = {
+      [Op.or]: [
+        { created_by: userId },  // Goal-urile create de user
+        { team_id: { [Op.in]: teamIds } }  // Goal-urile echipelor
+      ]
+    };
+    
     const goals = await Goal.findAll({
-      where: { created_by: userId },
+      where: whereClause,
       include: [
         { 
           model: Task, 
@@ -81,7 +98,8 @@ exports.createGoal = async (req, res) => {
       relevant_reasoning, 
       time_bound_date,
       status,
-      progress
+      progress,
+      team_id
     } = req.body;
     
     const userId = req.user.id;
@@ -96,6 +114,7 @@ exports.createGoal = async (req, res) => {
       time_bound_date,
       status: status || 'Not Started',
       progress: progress || 0,
+      team_id, 
       created_by: userId
     });
     
@@ -122,7 +141,8 @@ exports.updateGoal = async (req, res) => {
       relevant_reasoning, 
       time_bound_date,
       status,
-      progress
+      progress,
+      team_id
     } = req.body;
     
     const userId = req.user.id;
@@ -144,7 +164,8 @@ exports.updateGoal = async (req, res) => {
       relevant_reasoning, 
       time_bound_date,
       status,
-      progress
+      progress,
+      team_id
     });
     
     res.status(200).json({ 

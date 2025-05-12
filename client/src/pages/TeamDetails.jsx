@@ -173,16 +173,20 @@ const TeamDetails = () => {
   const handleSendInvitation = async (e) => {
     e.preventDefault();
     if (!inviteEmail.trim()) return;
-
+  
     try {
       setLoading(true);
       
+      // 1. Trimite invitația! ✅
+      await teamService.inviteToTeam(id, { email: inviteEmail });
+      
+      // 2. Apoi setează success message ✅
       setInviteStatus({
         message: 'Invitation sent successfully!',
         type: 'success'
       });
       
-      // Refresh invitations
+      // 3. Refresh invitations
       const invitationsResponse = await teamService.getTeamInvitations(id);
       setInvitations(invitationsResponse.invitations || []);
       
@@ -202,7 +206,7 @@ const TeamDetails = () => {
       setLoading(false);
     }
   };
-
+  
   const handleCancelInvitation = async (invitationId) => {
     if (!confirm('Are you sure you want to cancel this invitation?')) return;
     

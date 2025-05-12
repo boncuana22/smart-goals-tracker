@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const { Team, User, TeamMember, Goal, TeamInvitation } = require('../models');
+const { Team, User, TeamMember, Goal, TeamInvitation, Task, KPI } = require('../models');
 const authMiddleware = require('../middleware/authMiddleware');
 const { sendTeamInvitation } = require('../utils/emailService');
 const crypto = require('crypto');
@@ -431,6 +431,8 @@ router.post('/:id/invitations', authMiddleware, async (req, res) => {
     // Get the inviter's name for the email
     const inviter = await User.findByPk(userId);
     const inviterName = inviter.name || inviter.username;
+    const inviterEmail = inviter.email; 
+
     
     // Generate unique token for the invitation
     const token = crypto.randomBytes(32).toString('hex');
@@ -458,7 +460,8 @@ router.post('/:id/invitations', authMiddleware, async (req, res) => {
       email,
       inviterName,
       team.name,
-      invitationLink
+      invitationLink,
+      inviterEmail 
     );
     
     if (!emailResult.success) {
@@ -720,3 +723,5 @@ router.post('/invite/accept/:token', async (req, res) => {
     res.status(500).json({ message: 'Server error' });
   }
 });
+
+module.exports = router;

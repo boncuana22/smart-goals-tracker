@@ -25,7 +25,7 @@ const GoalDetails = () => {
     setIsLoading(true);
     setError('');
     try {
-      // Încărcarea datelor pentru obiectiv
+      // Load goal data
       const response = await goalService.getGoalById(goalId);
       if (!response.goal) {
         throw new Error('Goal not found');
@@ -33,7 +33,7 @@ const GoalDetails = () => {
       
       setGoal(response.goal);
       
-      // Încărcarea task-urilor asociate
+      // Load related tasks
       try {
         const tasksResponse = await taskService.getAllTasks();
         const filtered = tasksResponse.tasks.filter(task => task.goal_id === parseInt(goalId));
@@ -58,7 +58,7 @@ const GoalDetails = () => {
       const data = { ...kpiData, goal_id: id };
       const response = await kpiService.createKPI(data);
       
-      // Actualizare stare
+      // Update state
       setGoal({
         ...goal,
         kpis: [...(goal.kpis || []), response.kpi]
@@ -73,7 +73,7 @@ const GoalDetails = () => {
     try {
       const response = await kpiService.updateKPI(kpiId, kpiData);
       
-      // Actualizare stare
+      // Update state
       setGoal({
         ...goal,
         kpis: goal.kpis.map(kpi => 
@@ -94,7 +94,7 @@ const GoalDetails = () => {
     try {
       await kpiService.deleteKPI(kpiId);
       
-      // Actualizare stare
+      // Update state
       setGoal({
         ...goal,
         kpis: goal.kpis.filter(kpi => kpi.id !== kpiId)
@@ -109,12 +109,12 @@ const GoalDetails = () => {
     try {
       const response = await kpiService.updateKPIValue(kpiId, value);
       
-      // Actualizare stare KPI
+      // Update KPI state
       const updatedKPIs = goal.kpis.map(kpi => 
         kpi.id === kpiId ? { ...kpi, current_value: value } : kpi
       );
       
-      // Actualizare stare goal (progres)
+      // Update goal state (progress)
       setGoal({
         ...goal,
         kpis: updatedKPIs,
@@ -122,7 +122,19 @@ const GoalDetails = () => {
       });
     } catch (err) {
       console.error('Error updating KPI value:', err);
-      // Nu afișăm un alert pentru această operație pentru a nu întrerupe experiența utilizatorului
+    }
+  };
+
+  // Handle KPIs update after syncing with financial data
+  const handleKPIsUpdated = async () => {
+    try {
+      // Reload goal data to get updated KPIs
+      const response = await goalService.getGoalById(id);
+      if (response.goal) {
+        setGoal(response.goal);
+      }
+    } catch (err) {
+      console.error('Error reloading goal after KPI sync:', err);
     }
   };
 
@@ -176,6 +188,7 @@ const GoalDetails = () => {
           onEditKPI={handleEditKPI}
           onDeleteKPI={handleDeleteKPI}
           onUpdateKPI={handleUpdateKPIValue}
+          onKPIsUpdated={handleKPIsUpdated}
         />
       </div>
     </Layout>
