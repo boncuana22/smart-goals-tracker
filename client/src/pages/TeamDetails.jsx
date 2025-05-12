@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Layout from '../components/common/Layout';
+import Modal from '../components/common/Modal';
 import teamService from '../api/teamService';
 import userService from '../api/userService';
 import goalService from '../api/goalService';
@@ -12,14 +13,20 @@ const TeamDetails = () => {
   const [team, setTeam] = useState(null);
   const [members, setMembers] = useState([]);
   const [goals, setGoals] = useState([]);
+  const [invitations, setInvitations] = useState([]);
+  const [availableUsers, setAvailableUsers] = useState([]);
+  const [availableGoals, setAvailableGoals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showAddMemberModal, setShowAddMemberModal] = useState(false);
   const [showAddGoalModal, setShowAddGoalModal] = useState(false);
-  const [users, setUsers] = useState([]);
-  const [availableGoals, setAvailableGoals] = useState([]);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [showInvitationsModal, setShowInvitationsModal] = useState(false);
   const [selectedUserId, setSelectedUserId] = useState('');
   const [selectedGoalId, setSelectedGoalId] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteStatus, setInviteStatus] = useState({ message: '', type: '' });
+  const [isLeader, setIsLeader] = useState(false);
 
   useEffect(() => {
     fetchTeamDetails();
@@ -37,9 +44,25 @@ const TeamDetails = () => {
       const membersResponse = await teamService.getTeamMembers(id);
       setMembers(membersResponse.members || []);
       
+      // Check if current user is a team leader
+      const currentUserMembership = membersResponse.members?.find(member => 
+        member.TeamMember && member.TeamMember.role === 'leader'
+      );
+      setIsLeader(!!currentUserMembership);
+      
       // Get team goals
       const goalsResponse = await teamService.getTeamGoals(id);
       setGoals(goalsResponse.goals || []);
+      
+      // If user is a leader, get pending invitations
+      if (currentUserMembership) {
+        try {
+          const invitationsResponse = await teamService.getTeamInvitations(id);
+          setInvitations(invitationsResponse.invitations || []);
+        } catch (err) {
+          console.error('Error fetching invitations:', err);
+        }
+      }
       
       setError(null);
     } catch (err) {
@@ -50,40 +73,40 @@ const TeamDetails = () => {
     }
   };
 
-  const handleAddMemberClick = async () => {
+  const fetchAvailableUsers = async () => {
     try {
-      // Fetch users not in the team
+      // Get all users
       const usersResponse = await userService.getAllUsers();
       const allUsers = usersResponse.users || [];
+      
+      // Filter out users already in the team
       const memberIds = members.map(member => member.id);
       const filteredUsers = allUsers.filter(user => !memberIds.includes(user.id));
       
-      setUsers(filteredUsers);
-      setShowAddMemberModal(true);
+      setAvailableUsers(filteredUsers);
     } catch (err) {
       console.error('Error fetching users:', err);
-      setError('Failed to load users');
+      setError('Failed to load available users');
     }
   };
 
-  const handleAddGoalClick = async () => {
+  const fetchAvailableGoals = async () => {
     try {
-      // Fetch goals not assigned to this team
+      // Get all goals
       const goalsResponse = await goalService.getAllGoals();
       const allGoals = goalsResponse.goals || [];
-      const teamGoalIds = goals.map(goal => goal.id);
-      const filteredGoals = allGoals.filter(goal => !teamGoalIds.includes(goal.id) && !goal.team_id);
+      
+      // Filter out goals already assigned to a team
+      const filteredGoals = allGoals.filter(goal => !goal.team_id);
       
       setAvailableGoals(filteredGoals);
-      setShowAddGoalModal(true);
     } catch (err) {
       console.error('Error fetching goals:', err);
-      setError('Failed to load goals');
+      setError('Failed to load available goals');
     }
   };
 
-  const handleAddMember = async (e) => {
-    e.preventDefault();
+  const handleAddMember = async () => {
     if (!selectedUserId) return;
     
     try {
@@ -105,8 +128,7 @@ const TeamDetails = () => {
     }
   };
 
-  const handleAddGoal = async (e) => {
-    e.preventDefault();
+  const handleAddGoal = async () => {
     if (!selectedGoalId) return;
     
     try {
@@ -148,6 +170,83 @@ const TeamDetails = () => {
     }
   };
 
+  const handleSendInvitation = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail.trim()) return;
+
+    try {
+      setLoading(true);
+      
+      setInviteStatus({
+        message: 'Invitation sent successfully!',
+        type: 'success'
+      });
+      
+      // Refresh invitations
+      const invitationsResponse = await teamService.getTeamInvitations(id);
+      setInvitations(invitationsResponse.invitations || []);
+      
+      // Clear email field but keep modal open for multiple invites
+      setInviteEmail('');
+      
+      setTimeout(() => {
+        setInviteStatus({ message: '', type: '' });
+      }, 3000);
+    } catch (err) {
+      console.error('Error sending invitation:', err);
+      setInviteStatus({
+        message: err.response?.data?.message || 'Failed to send invitation',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleCancelInvitation = async (invitationId) => {
+    if (!confirm('Are you sure you want to cancel this invitation?')) return;
+    
+    try {
+      setLoading(true);
+      await teamService.cancelInvitation(id, invitationId);
+      
+      // Refresh invitations
+      const invitationsResponse = await teamService.getTeamInvitations(id);
+      setInvitations(invitationsResponse.invitations || []);
+      
+      setError(null);
+    } catch (err) {
+      console.error('Error cancelling invitation:', err);
+      setError('Failed to cancel invitation');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const openAddMemberModal = () => {
+    fetchAvailableUsers();
+    setSelectedUserId('');
+    setShowAddMemberModal(true);
+  };
+
+  const openAddGoalModal = () => {
+    fetchAvailableGoals();
+    setSelectedGoalId('');
+    setShowAddGoalModal(true);
+  };
+
+  // Format date for display
+  const formatDate = (dateString) => {
+    if (!dateString) return 'No date';
+    
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
+  };
+
   if (loading && !team) {
     return <Layout><div className="loading">Loading team details...</div></Layout>;
   }
@@ -171,12 +270,30 @@ const TeamDetails = () => {
             <h1>{team.name}</h1>
             {team.description && <p className="team-description">{team.description}</p>}
           </div>
-          <button 
-            className="back-button"
-            onClick={() => navigate('/teams')}
-          >
-            Back to Teams
-          </button>
+          <div className="header-actions">
+            {isLeader && (
+              <button 
+                className="invite-btn"
+                onClick={() => setShowInviteModal(true)}
+              >
+                Invite Members
+              </button>
+            )}
+            {isLeader && invitations.length > 0 && (
+              <button 
+                className="invitations-btn"
+                onClick={() => setShowInvitationsModal(true)}
+              >
+                Pending Invitations ({invitations.length})
+              </button>
+            )}
+            <button 
+              className="back-button"
+              onClick={() => navigate('/teams')}
+            >
+              Back to Teams
+            </button>
+          </div>
         </div>
         
         {error && <div className="error-message">{error}</div>}
@@ -185,12 +302,14 @@ const TeamDetails = () => {
           <div className="team-members-section">
             <div className="section-header">
               <h2>Team Members</h2>
-              <button 
-                className="add-button"
-                onClick={handleAddMemberClick}
-              >
-                Add Member
-              </button>
+              {isLeader && (
+                <button 
+                  className="add-button"
+                  onClick={openAddMemberModal}
+                >
+                  Add Member
+                </button>
+              )}
             </div>
             
             <div className="members-list">
@@ -214,12 +333,14 @@ const TeamDetails = () => {
                         <p className="member-role">{member.TeamMember?.role || 'Member'}</p>
                       </div>
                     </div>
-                    <button 
-                      className="remove-button"
-                      onClick={() => handleRemoveMember(member.id)}
-                    >
-                      Remove
-                    </button>
+                    {isLeader && member.TeamMember?.role !== 'leader' && (
+                      <button 
+                        className="remove-button"
+                        onClick={() => handleRemoveMember(member.id)}
+                      >
+                        Remove
+                      </button>
+                    )}
                   </div>
                 ))
               ) : (
@@ -231,19 +352,31 @@ const TeamDetails = () => {
           <div className="team-goals-section">
             <div className="section-header">
               <h2>Team Goals</h2>
-              <button 
-                className="add-button"
-                onClick={handleAddGoalClick}
-              >
-                Add Goal
-              </button>
+              {isLeader && (
+                <button 
+                  className="add-button"
+                  onClick={openAddGoalModal}
+                >
+                  Add Goal
+                </button>
+              )}
             </div>
             
             <div className="goals-list">
               {goals.length > 0 ? (
                 goals.map(goal => (
                   <div key={goal.id} className="goal-card">
-                    <h3>{goal.title}</h3>
+                    <div className="goal-header">
+                      <h3>{goal.title}</h3>
+                      <span className={`goal-status status-${goal.status.toLowerCase().replace(' ', '-')}`}>
+                        {goal.status}
+                      </span>
+                    </div>
+                    
+                    {goal.description && (
+                      <p className="goal-description">{goal.description}</p>
+                    )}
+                    
                     <div className="goal-progress">
                       <div className="progress-bar">
                         <div 
@@ -253,9 +386,22 @@ const TeamDetails = () => {
                       </div>
                       <span className="progress-value">{goal.progress || 0}%</span>
                     </div>
-                    <div className="goal-status">
-                      Status: <span className={`status-${goal.status.toLowerCase().replace(' ', '-')}`}>{goal.status}</span>
+                    
+                    <div className="goal-stats">
+                      <div className="stat-item">
+                        <span className="stat-label">Deadline:</span>
+                        <span className="stat-value">{formatDate(goal.time_bound_date)}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">Tasks:</span>
+                        <span className="stat-value">{goal.tasks?.length || 0}</span>
+                      </div>
+                      <div className="stat-item">
+                        <span className="stat-label">KPIs:</span>
+                        <span className="stat-value">{goal.kpis?.length || 0}</span>
+                      </div>
                     </div>
+                    
                     <button 
                       className="view-button"
                       onClick={() => navigate(`/goals/${goal.id}`)}
@@ -272,134 +418,257 @@ const TeamDetails = () => {
         </div>
         
         {/* Add Member Modal */}
-        {showAddMemberModal && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h2>Add Team Member</h2>
-                <button 
-                  className="close-modal-btn"
-                  onClick={() => setShowAddMemberModal(false)}
-                >
-                  &times;
-                </button>
-              </div>
-              
-              {users.length > 0 ? (
-                <form onSubmit={handleAddMember}>
-                  <div className="form-group">
-                    <label htmlFor="user-select">Select User</label>
-                    <select
-                      id="user-select"
-                      value={selectedUserId}
-                      onChange={(e) => setSelectedUserId(e.target.value)}
-                      required
-                    >
-                      <option value="">Select a user</option>
-                      {users.map(user => (
-                        <option key={user.id} value={user.id}>
-                          {user.name || user.username}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="form-actions">
-                    <button 
-                      type="button" 
-                      className="cancel-btn"
-                      onClick={() => setShowAddMemberModal(false)}
-                    >
-                      Cancel
-                    </button>
-                    <button 
-                      type="submit" 
-                      className="submit-btn"
-                      disabled={!selectedUserId}
-                    >
-                      Add Member
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="modal-message">
-                  <p>No available users to add to this team.</p>
+        <Modal isOpen={showAddMemberModal} onClose={() => setShowAddMemberModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Add Team Member</h2>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowAddMemberModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {availableUsers.length > 0 ? (
+              <div>
+                <div className="form-group">
+                  <label htmlFor="user-select">Select User</label>
+                  <select
+                    id="user-select"
+                    value={selectedUserId}
+                    onChange={(e) => setSelectedUserId(e.target.value)}
+                    className="form-control"
+                  >
+                    <option value="">Select a user</option>
+                    {availableUsers.map(user => (
+                      <option key={user.id} value={user.id}>
+                        {user.name || user.username} ({user.email})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-actions">
                   <button 
-                    className="close-btn"
+                    type="button" 
+                    className="cancel-btn"
                     onClick={() => setShowAddMemberModal(false)}
                   >
-                    Close
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    className="submit-btn"
+                    onClick={handleAddMember}
+                    disabled={!selectedUserId || loading}
+                  >
+                    Add Member
                   </button>
                 </div>
-              )}
-            </div>
-          </div>
-        )}
-        
-        {/* Add Goal Modal */}
-        {showAddGoalModal && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h2>Add Goal to Team</h2>
+              </div>
+            ) : (
+              <div className="modal-message">
+                <p>No available users to add to this team.</p>
+                <p>You can invite users by email instead.</p>
                 <button 
-                  className="close-modal-btn"
-                  onClick={() => setShowAddGoalModal(false)}
+                  className="close-btn"
+                  onClick={() => {
+                    setShowAddMemberModal(false);
+                    setShowInviteModal(true);
+                  }}
                 >
-                  &times;
+                  Invite by Email
                 </button>
               </div>
+            )}
+          </div>
+        </Modal>
+        
+        {/* Add Goal Modal */}
+        <Modal isOpen={showAddGoalModal} onClose={() => setShowAddGoalModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Add Goal to Team</h2>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowAddGoalModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {availableGoals.length > 0 ? (
+              <div>
+                <div className="form-group">
+                  <label htmlFor="goal-select">Select Goal</label>
+                  <select
+                    id="goal-select"
+                    value={selectedGoalId}
+                    onChange={(e) => setSelectedGoalId(e.target.value)}
+                    className="form-control"
+                  >
+                    <option value="">Select a goal</option>
+                    {availableGoals.map(goal => (
+                      <option key={goal.id} value={goal.id}>
+                        {goal.title}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                
+                <div className="form-actions">
+                  <button 
+                    type="button" 
+                    className="cancel-btn"
+                    onClick={() => setShowAddGoalModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button 
+                    type="button" 
+                    className="submit-btn"
+                    onClick={handleAddGoal}
+                    disabled={!selectedGoalId || loading}
+                  >
+                    Add Goal
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="modal-message">
+                <p>No available goals to add to this team. Create new goals first.</p>
+                <button 
+                  className="close-btn"
+                  onClick={() => {
+                    setShowAddGoalModal(false);
+                    navigate('/goals');
+                  }}
+                >
+                  Create Goal
+                </button>
+              </div>
+            )}
+          </div>
+        </Modal>
+        
+        {/* Invite by Email Modal */}
+        <Modal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Invite to {team.name}</h2>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowInviteModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {inviteStatus.message && (
+              <div className={`invite-status ${inviteStatus.type}`}>
+                {inviteStatus.message}
+              </div>
+            )}
+            
+            <form onSubmit={handleSendInvitation}>
+              <div className="form-group">
+                <label htmlFor="invite-email">Email Address</label>
+                <input
+                  id="invite-email"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                  className="form-control"
+                  placeholder="Enter recipient's email"
+                />
+                <div className="form-helper">
+                  An invitation email will be sent with instructions to join the team.
+                </div>
+              </div>
               
-              {availableGoals.length > 0 ? (
-                <form onSubmit={handleAddGoal}>
-                  <div className="form-group">
-                    <label htmlFor="goal-select">Select Goal</label>
-                    <select
-                      id="goal-select"
-                      value={selectedGoalId}
-                      onChange={(e) => setSelectedGoalId(e.target.value)}
-                      required
-                    >
-                      <option value="">Select a goal</option>
-                      {availableGoals.map(goal => (
-                        <option key={goal.id} value={goal.id}>
-                          {goal.title}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  
-                  <div className="form-actions">
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={() => setShowInviteModal(false)}
+                >
+                  Close
+                </button>
+                <button 
+                  type="submit" 
+                  className="submit-btn"
+                  disabled={!inviteEmail.trim() || loading}
+                >
+                  {loading ? 'Sending...' : 'Send Invitation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
+        
+        {/* Pending Invitations Modal */}
+        <Modal isOpen={showInvitationsModal} onClose={() => setShowInvitationsModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Pending Invitations</h2>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowInvitationsModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {invitations.length > 0 ? (
+              <div className="invitations-list">
+                {invitations.map(invitation => (
+                  <div key={invitation.id} className="invitation-item">
+                    <div className="invitation-info">
+                      <div className="invitation-email">{invitation.email}</div>
+                      <div className="invitation-date">
+                        Sent: {formatDate(invitation.createdAt)}
+                      </div>
+                      <div className="invitation-date">
+                        Expires: {formatDate(invitation.expires_at)}
+                      </div>
+                    </div>
                     <button 
-                      type="button" 
-                      className="cancel-btn"
-                      onClick={() => setShowAddGoalModal(false)}
+                      className="cancel-invitation-btn"
+                      onClick={() => handleCancelInvitation(invitation.id)}
                     >
                       Cancel
                     </button>
-                    <button 
-                      type="submit" 
-                      className="submit-btn"
-                      disabled={!selectedGoalId}
-                    >
-                      Add Goal
-                    </button>
                   </div>
-                </form>
-              ) : (
-                <div className="modal-message">
-                  <p>No available goals to add to this team. Create new goals first.</p>
-                  <button 
-                    className="close-btn"
-                    onClick={() => setShowAddGoalModal(false)}
-                  >
-                    Close
-                  </button>
-                </div>
-              )}
+                ))}
+              </div>
+            ) : (
+              <div className="modal-message">
+                <p>No pending invitations.</p>
+                <button 
+                  className="close-btn"
+                  onClick={() => {
+                    setShowInvitationsModal(false);
+                    setShowInviteModal(true);
+                  }}
+                >
+                  Send Invitation
+                </button>
+              </div>
+            )}
+            
+            <div className="form-actions">
+              <button 
+                type="button" 
+                className="close-btn"
+                onClick={() => setShowInvitationsModal(false)}
+              >
+                Close
+              </button>
             </div>
           </div>
-        )}
+        </Modal>
       </div>
     </Layout>
   );

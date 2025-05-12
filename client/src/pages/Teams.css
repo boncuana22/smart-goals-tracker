@@ -38,11 +38,16 @@
   }
   
   .team-card {
-    background-color: #1e2a45;
+    background-color: var(--secondary-bg, #f8f9fa);
     border-radius: 0.75rem;
     padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  .team-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
   }
   
   .team-name {
@@ -52,15 +57,19 @@
   
   .team-description {
     margin: 0 0 1rem;
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
     font-size: 0.9rem;
     flex-grow: 1;
+    min-height: 2.5rem;
   }
   
   .team-stats {
     display: flex;
     justify-content: space-around;
     margin-bottom: 1.5rem;
+    border-top: 1px solid rgba(0, 0, 0, 0.1);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+    padding: 1rem 0;
   }
   
   .stat {
@@ -72,31 +81,53 @@
     font-size: 1.5rem;
     font-weight: 600;
     margin-bottom: 0.25rem;
+    color: var(--accent-color, #4361ee);
   }
   
   .stat-label {
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
     font-size: 0.8rem;
   }
   
-  .view-team-btn {
-    background-color: transparent;
-    border: 1px solid #4361ee;
-    color: #4361ee;
+  .team-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  
+  .view-team-btn, .invite-btn {
     border-radius: 0.5rem;
     padding: 0.75rem;
     cursor: pointer;
     transition: all 0.2s;
+    font-weight: 500;
+    text-align: center;
+  }
+  
+  .view-team-btn {
+    background-color: transparent;
+    border: 1px solid var(--accent-color, #4361ee);
+    color: var(--accent-color, #4361ee);
   }
   
   .view-team-btn:hover {
-    background-color: #4361ee;
+    background-color: var(--accent-color, #4361ee);
     color: white;
+  }
+  
+  .invite-btn {
+    background-color: rgba(67, 97, 238, 0.1);
+    border: none;
+    color: var(--accent-color, #4361ee);
+  }
+  
+  .invite-btn:hover {
+    background-color: rgba(67, 97, 238, 0.2);
   }
   
   .no-teams-message {
     grid-column: 1 / -1;
-    background-color: #1e2a45;
+    background-color: var(--secondary-bg, #f8f9fa);
     border-radius: 0.75rem;
     padding: 3rem 1.5rem;
     text-align: center;
@@ -104,11 +135,11 @@
   
   .no-teams-message p {
     margin: 0 0 1.5rem;
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
   }
   
   .create-first-team-btn {
-    background-color: #4361ee;
+    background-color: var(--accent-color, #4361ee);
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -122,118 +153,28 @@
     background-color: #3a56d4;
   }
   
-  /* Modal styles */
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
+  /* Modal styles enhancments */
   .modal-content {
-    background-color: #1e2a45;
-    border-radius: 0.75rem;
-    width: 100%;
-    max-width: 500px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
-    max-height: 90vh;
+    min-width: 350px;
   }
   
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-  }
-  
-  .close-modal-btn {
-    background: none;
-    border: none;
-    color: #cbd5e1;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-  }
-  
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #cbd5e1;
-  }
-  
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid #2a3a5c;
-    background-color: #121826;
-    color: white;
+  .invite-status {
+    padding: 10px 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
     font-size: 0.9rem;
   }
   
-  .form-group textarea {
-    resize: vertical;
-    min-height: 100px;
+  .invite-status.success {
+    background-color: rgba(52, 211, 153, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(52, 211, 153, 0.3);
   }
   
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  
-  .cancel-btn {
-    background-color: transparent;
-    border: 1px solid #cbd5e1;
-    color: #cbd5e1;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .cancel-btn:hover {
-    background-color: rgba(203, 213, 225, 0.1);
-  }
-  
-  .submit-btn {
-    background-color: #4361ee;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .submit-btn:hover {
-    background-color: #3a56d4;
-  }
-  
-  .submit-btn:disabled {
-    background-color: #3a56d4;
-    opacity: 0.6;
-    cursor: not-allowed;
+  .invite-status.error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
   }
   
   @media (max-width: 768px) {
@@ -245,10 +186,5 @@
     
     .teams-grid {
       grid-template-columns: 1fr;
-    }
-    
-    .modal-content {
-      width: calc(100% - 2rem);
-      margin: 0 1rem;
     }
   }

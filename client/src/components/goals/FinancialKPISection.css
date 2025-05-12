@@ -1,0 +1,210 @@
+.financial-kpi-section {
+    margin-top: 2rem;
+    background-color: var(--secondary-bg, #f8f9fa);
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+  }
+  
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+  }
+  
+  .section-header h3 {
+    margin: 0;
+    font-size: 1.2rem;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+  }
+  
+  .sync-button {
+    background-color: transparent;
+    border: 1px solid var(--accent-color, #4361ee);
+    color: var(--accent-color, #4361ee);
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.85rem;
+  }
+  
+  .sync-button:hover {
+    background-color: var(--accent-color, #4361ee);
+    color: white;
+  }
+  
+  .sync-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+  
+  .add-financial-dropdown {
+    position: relative;
+    display: inline-block;
+  }
+  
+  .add-financial-btn {
+    background-color: var(--accent-color, #4361ee);
+    color: white;
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 0.5rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+  }
+  
+  .dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    min-width: 180px;
+    background-color: white;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    z-index: 1;
+  }
+  
+  .dropdown-content button {
+    display: block;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    text-align: left;
+    background: none;
+    border: none;
+    color: var(--text-primary, #333);
+    cursor: pointer;
+    transition: background-color 0.2s;
+  }
+  
+  .dropdown-content button:hover {
+    background-color: #f5f5f5;
+  }
+  
+  .add-financial-dropdown:hover .dropdown-content {
+    display: block;
+  }
+  
+  .sync-result {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+  }
+  
+  .sync-result.success {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+  }
+  
+  .sync-result.error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+  }
+  
+  .financial-kpis-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1rem;
+  }
+  
+  .financial-kpi-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .kpi-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 0.75rem;
+  }
+  
+  .kpi-header h4 {
+    margin: 0;
+    font-size: 1rem;
+  }
+  
+  .kpi-value {
+    font-weight: 600;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+  }
+  
+  .kpi-value.currency {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+  }
+  
+  .kpi-value.percentage {
+    background-color: rgba(79, 70, 229, 0.1);
+    color: #4f46e5;
+  }
+  
+  .kpi-description {
+    color: var(--text-secondary, #6c757d);
+    font-size: 0.85rem;
+    margin-bottom: 1rem;
+    min-height: 2.5rem;
+  }
+  
+  .kpi-progress {
+    margin-top: 0.75rem;
+  }
+  
+  .progress-bar {
+    height: 0.5rem;
+    background-color: #e5e7eb;
+    border-radius: 0.25rem;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background-color: var(--accent-color, #4361ee);
+    border-radius: 0.25rem;
+  }
+  
+  .progress-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .empty-financial-kpis {
+    text-align: center;
+    padding: 2rem 0;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .empty-financial-kpis p {
+    margin: 0 0 0.5rem;
+  }
+  
+  @media (max-width: 768px) {
+    .section-header {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    
+    .header-actions {
+      width: 100%;
+    }
+    
+    .sync-button, .add-financial-btn {
+      width: 100%;
+    }
+    
+    .financial-kpis-grid {
+      grid-template-columns: 1fr;
+    }
+  }

@@ -29,6 +29,12 @@ const kpiService = {
   updateKPIValue: async (id, current_value) => {
     const response = await api.patch(`/kpis/${id}/value`, { current_value });
     return response.data;
+  },
+  
+  // New function to sync financial KPIs with latest financial data
+  syncFinancialKPIs: async () => {
+    const response = await api.post('/kpis/sync-financial');
+    return response.data;
   }
 };
 

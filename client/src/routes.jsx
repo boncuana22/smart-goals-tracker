@@ -15,6 +15,7 @@ import GoalDetails from './pages/GoalDetails';
 import UserProfile from './pages/UserProfile';
 import Teams from './pages/Teams';
 import TeamDetails from './pages/TeamDetails';
+import TeamInvite from './pages/TeamInvite';
 
 // Route Guard pentru rute protejate
 const PrivateRoute = ({ children }) => {
@@ -135,6 +136,10 @@ const routes = [
         <TeamDetails />
       </PrivateRoute>
     )
+  },
+  {
+    path: '/teams/invite/:token',
+    element: <TeamInvite />
   }
 ];
 

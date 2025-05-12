@@ -10,6 +10,7 @@ const KPI = require('./KPI');
 const CalendarEvent = require('./CalendarEvent');
 const Team = require('./Team');
 const TeamMember = require('./TeamMember');
+const TeamInvitation = require('./TeamInvitation');
 
 // Relații User - Task
 User.hasMany(Task, { foreignKey: 'user_id', as: 'tasks' });
@@ -43,9 +44,17 @@ CalendarEvent.belongsTo(User, { foreignKey: 'user_id' });
 User.belongsToMany(Team, { through: TeamMember, foreignKey: 'user_id' });
 Team.belongsToMany(User, { through: TeamMember, foreignKey: 'team_id' });
 
-// Relații User - Goal
+// Relații Team - Goal
 Team.hasMany(Goal, { foreignKey: 'team_id', as: 'goals' });
 Goal.belongsTo(Team, { foreignKey: 'team_id' });
+
+// Relații Team - TeamInvitation
+Team.hasMany(TeamInvitation, { foreignKey: 'team_id', as: 'invitations' });
+TeamInvitation.belongsTo(Team, { foreignKey: 'team_id' });
+
+// Relații User - TeamInvitation (as inviter)
+User.hasMany(TeamInvitation, { foreignKey: 'invited_by', as: 'sentInvitations' });
+TeamInvitation.belongsTo(User, { foreignKey: 'invited_by', as: 'inviter' });
 
 module.exports = {
   User,
@@ -56,5 +65,6 @@ module.exports = {
   KPI,
   CalendarEvent,
   Team,
-  TeamMember
+  TeamMember,
+  TeamInvitation
 };

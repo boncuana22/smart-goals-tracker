@@ -59,6 +59,36 @@ const teamService = {
   getTeamGoals: async (teamId) => {
     const response = await api.get(`/teams/${teamId}/goals`);
     return response.data;
+  },
+
+  // Trimite invitație pentru a se alătura unei echipe
+  inviteToTeam: async (teamId, inviteData) => {
+    const response = await api.post(`/teams/${teamId}/invitations`, inviteData);
+    return response.data;
+  },
+
+  // Obține toate invitațiile pentru o echipă
+  getTeamInvitations: async (teamId) => {
+    const response = await api.get(`/teams/${teamId}/invitations`);
+    return response.data;
+  },
+
+  // Anulează o invitație
+  cancelInvitation: async (teamId, invitationId) => {
+    const response = await api.delete(`/teams/${teamId}/invitations/${invitationId}`);
+    return response.data;
+  },
+
+  // Verifică validitatea unui token de invitație
+  verifyInvitation: async (token) => {
+    const response = await api.get(`/teams/invite/verify/${token}`);
+    return response.data;
+  },
+
+  // Acceptă o invitație
+  acceptInvitation: async (token, userData) => {
+    const response = await api.post(`/teams/invite/accept/${token}`, userData);
+    return response.data;
   }
 };
 

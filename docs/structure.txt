@@ -7,6 +7,8 @@
 │   ├── package-lock.json
 │   ├── package.json
 │   ├── public
+│   │   ├── uploads
+│   │   │   └── profile-photos
 │   │   └── vite.svg
 │   ├── src
 │   │   ├── App.css
@@ -18,7 +20,9 @@
 │   │   │   ├── financialService.jsx
 │   │   │   ├── goalService.jsx
 │   │   │   ├── kpiService.jsx
-│   │   │   └── taskService.jsx
+│   │   │   ├── taskService.jsx
+│   │   │   ├── teamService.jsx
+│   │   │   └── userService.jsx
 │   │   ├── assets
 │   │   │   └── react.svg
 │   │   ├── components
@@ -27,6 +31,7 @@
 │   │   │   │   ├── EventForm.css
 │   │   │   │   └── EventForm.jsx
 │   │   │   ├── common
+│   │   │   │   ├── Layout.css
 │   │   │   │   ├── Layout.jsx
 │   │   │   │   ├── Modal.css
 │   │   │   │   └── Modal.jsx
@@ -76,10 +81,23 @@
 │   │   │   ├── NotFound.jsx
 │   │   │   ├── Register.jsx
 │   │   │   ├── Tasks.css
-│   │   │   └── Tasks.jsx
+│   │   │   ├── Tasks.jsx
+│   │   │   ├── TeamDetails.css
+│   │   │   ├── TeamDetails.jsx
+│   │   │   ├── Teams.css
+│   │   │   ├── Teams.jsx
+│   │   │   ├── UserProfile.css
+│   │   │   └── UserProfile.jsx
 │   │   ├── routes.jsx
 │   │   └── utils
 │   └── vite.config.js
+├── docs
+│   ├── architecture.puml
+│   └── structure.txt
+├── out
+│   └── docs
+│       └── architecture
+│           └── architecture.png
 ├── server
 │   ├── config
 │   │   └── database.js
@@ -100,6 +118,8 @@
 │   │   ├── Goal.js
 │   │   ├── KPI.js
 │   │   ├── Task.js
+│   │   ├── Team.js
+│   │   ├── TeamMember.js
 │   │   ├── User.js
 │   │   └── index.js
 │   ├── package-lock.json
@@ -110,11 +130,20 @@
 │   │   ├── financialRoutes.js
 │   │   ├── goalRoutes.js
 │   │   ├── kpiRoutes.js
-│   │   └── taskRoutes.js
+│   │   ├── taskRoutes.js
+│   │   ├── teamRoutes.js
+│   │   └── userRoutes.js
 │   ├── server.js
 │   ├── uploads
-│   │   └── financial-1744554246975-777570779.xlsx
+│   │   ├── financial-1746880792738-234738241.xlsx
+│   │   ├── financial-1746881246385-666900568.xlsx
+│   │   └── profile-photos
+│   │       ├── user_2_1746984339671.png
+│   │       ├── user_2_1746984372823.jpg
+│   │       ├── user_2_1746984551184.png
+│   │       ├── user_2_1746985273973.jpeg
+│   │       └── user_2_1746985280966.png
 │   └── utils
 └── structure.txt
 
-26 directories, 92 files
+33 directories, 114 files

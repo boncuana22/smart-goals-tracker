@@ -18,14 +18,45 @@
   
   .team-description {
     margin: 0;
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
     max-width: 600px;
+  }
+  
+  .header-actions {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+  }
+  
+  .invite-btn, .invitations-btn {
+    background-color: var(--accent-color, #4361ee);
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+  }
+  
+  .invite-btn:hover, .invitations-btn:hover {
+    background-color: #3a56d4;
+  }
+  
+  .invitations-btn {
+    background-color: rgba(67, 97, 238, 0.15);
+    color: var(--accent-color, #4361ee);
+  }
+  
+  .invitations-btn:hover {
+    background-color: rgba(67, 97, 238, 0.25);
   }
   
   .back-button {
     background-color: transparent;
-    border: 1px solid #cbd5e1;
-    color: #cbd5e1;
+    border: 1px solid var(--text-secondary, #6c757d);
+    color: var(--text-secondary, #6c757d);
     border-radius: 0.5rem;
     padding: 0.5rem 1rem;
     cursor: pointer;
@@ -33,7 +64,7 @@
   }
   
   .back-button:hover {
-    background-color: rgba(203, 213, 225, 0.1);
+    background-color: rgba(108, 117, 125, 0.1);
   }
   
   .team-details-content {
@@ -42,11 +73,11 @@
     gap: 1.5rem;
   }
   
-  .team-members-section,
-  .team-goals-section {
-    background-color: #1e2a45;
+  .team-members-section, .team-goals-section {
+    background-color: var(--secondary-bg, #f8f9fa);
     border-radius: 0.75rem;
     padding: 1.5rem;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   }
   
   .section-header {
@@ -62,7 +93,7 @@
   }
   
   .add-button {
-    background-color: #4361ee;
+    background-color: var(--accent-color, #4361ee);
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -76,20 +107,22 @@
     background-color: #3a56d4;
   }
   
-  .members-list,
-  .goals-list {
+  .members-list, .goals-list {
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    max-height: 600px;
+    overflow-y: auto;
   }
   
   .member-card {
-    background-color: #2a3a5c;
+    background-color: white;
     border-radius: 0.5rem;
     padding: 1rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   
   .member-info {
@@ -98,7 +131,7 @@
     gap: 1rem;
   }
   
-  .member-avatar {
+  .member-avatar, .member-avatar-placeholder {
     width: 2.5rem;
     height: 2.5rem;
     border-radius: 50%;
@@ -106,10 +139,7 @@
   }
   
   .member-avatar-placeholder {
-    width: 2.5rem;
-    height: 2.5rem;
-    border-radius: 50%;
-    background-color: #121826;
+    background-color: var(--accent-color, #4361ee);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -124,7 +154,7 @@
   
   .member-role {
     margin: 0;
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
     font-size: 0.8rem;
   }
   
@@ -145,23 +175,63 @@
   }
   
   .goal-card {
-    background-color: #2a3a5c;
+    background-color: white;
     border-radius: 0.5rem;
     padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
   }
   
-  .goal-card h3 {
-    margin: 0 0 0.75rem;
+  .goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 0.75rem;
+  }
+  
+  .goal-header h3 {
+    margin: 0;
     font-size: 1rem;
   }
   
+  .goal-status {
+    font-size: 0.75rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+  }
+  
+  .status-not-started {
+    background-color: var(--text-secondary, #6c757d);
+    color: white;
+  }
+  
+  .status-in-progress {
+    background-color: #3a56d4;
+    color: white;
+  }
+  
+  .status-completed {
+    background-color: #10b981;
+    color: white;
+  }
+  
+  .status-on-hold {
+    background-color: #f59e0b;
+    color: white;
+  }
+  
+  .goal-description {
+    margin: 0 0 0.75rem;
+    color: var(--text-secondary, #6c757d);
+    font-size: 0.85rem;
+  }
+  
   .goal-progress {
-    margin-bottom: 0.75rem;
+    margin-bottom: 1rem;
   }
   
   .progress-bar {
     height: 0.5rem;
-    background-color: #1e2a45;
+    background-color: #e5e7eb;
     border-radius: 0.25rem;
     overflow: hidden;
     margin-bottom: 0.25rem;
@@ -169,205 +239,79 @@
   
   .progress-fill {
     height: 100%;
-    background-color: #4361ee;
+    background-color: #10b981;
     border-radius: 0.25rem;
   }
   
   .progress-value {
     text-align: right;
+    font-size: 0.75rem;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .goal-stats {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
     font-size: 0.8rem;
-    color: #cbd5e1;
   }
   
-  .goal-status {
-    margin-bottom: 0.75rem;
-    font-size: 0.85rem;
+  .stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
   
-  .status-not-started {
-    color: #cbd5e1;
+  .stat-label {
+    color: var(--text-secondary, #6c757d);
+    margin-bottom: 0.25rem;
   }
   
-  .status-in-progress {
-    color: #fbbf24;
-  }
-  
-  .status-completed {
-    color: #34d399;
-  }
-  
-  .status-on-hold {
-    color: #ef4444;
+  .stat-value {
+    font-weight: 600;
   }
   
   .view-button {
-    background-color: transparent;
-    border: 1px solid #4361ee;
-    color: #4361ee;
-    border-radius: 0.5rem;
-    padding: 0.5rem 0.75rem;
-    font-size: 0.8rem;
     width: 100%;
+    background-color: transparent;
+    border: 1px solid var(--accent-color, #4361ee);
+    color: var(--accent-color, #4361ee);
+    border-radius: 0.5rem;
+    padding: 0.5rem;
     cursor: pointer;
     transition: all 0.2s;
+    font-size: 0.9rem;
   }
   
   .view-button:hover {
-    background-color: #4361ee;
+    background-color: var(--accent-color, #4361ee);
     color: white;
   }
   
   .empty-state {
     padding: 2rem 0;
     text-align: center;
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
     font-size: 0.9rem;
   }
   
-  .error-container {
-    text-align: center;
-    padding: 3rem 1rem;
-  }
-  
-  .error-container h2 {
-    margin: 0 0 1.5rem;
-  }
-  
-  .error-container button {
-    background-color: #4361ee;
-    color: white;
-    border: none;
+  .error-message {
+    background-color: #fee2e2;
+    color: #ef4444;
+    padding: 0.75rem 1rem;
     border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    margin-bottom: 1rem;
   }
   
-  .error-container button:hover {
-    background-color: #3a56d4;
-  }
-  
-  .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
-  }
-  
-  .modal-content {
-    background-color: #1e2a45;
-    border-radius: 0.75rem;
-    width: 100%;
-    max-width: 500px;
-    padding: 1.5rem;
-    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
-    overflow-y: auto;
-    max-height: 90vh;
-  }
-  
-  .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1.5rem;
-  }
-  
-  .modal-header h2 {
-    margin: 0;
-    font-size: 1.25rem;
-  }
-  
-  .close-modal-btn {
-    background: none;
-    border: none;
-    color: #cbd5e1;
-    font-size: 1.5rem;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-  }
-  
-  .form-group {
-    margin-bottom: 1.5rem;
-  }
-  
-  .form-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    color: #cbd5e1;
-  }
-  
-  .form-group input,
-  .form-group textarea,
-  .form-group select {
-    width: 100%;
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid #2a3a5c;
-    background-color: #121826;
-    color: white;
-    font-size: 0.9rem;
-  }
-  
-  .form-group textarea {
-    resize: vertical;
-    min-height: 100px;
-  }
-  
-  .form-actions {
-    display: flex;
-    justify-content: flex-end;
-    gap: 1rem;
-  }
-  
-  .cancel-btn {
-    background-color: transparent;
-    border: 1px solid #cbd5e1;
-    color: #cbd5e1;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
-  
-  .cancel-btn:hover {
-    background-color: rgba(203, 213, 225, 0.1);
-  }
-  
-  .submit-btn {
-    background-color: #4361ee;
-    color: white;
-    border: none;
-    border-radius: 0.5rem;
-    padding: 0.75rem 1.5rem;
-    cursor: pointer;
-    transition: background-color 0.2s;
-  }
-  
-  .submit-btn:hover {
-    background-color: #3a56d4;
-  }
-  
-  .submit-btn:disabled {
-    background-color: #3a56d4;
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-  
+  /* Modal Styles */
   .modal-message {
     text-align: center;
     padding: 1rem 0;
-    color: #cbd5e1;
+    color: var(--text-secondary, #6c757d);
   }
   
   .close-btn {
-    background-color: #4361ee;
+    background-color: var(--accent-color, #4361ee);
     color: white;
     border: none;
     border-radius: 0.5rem;
@@ -379,6 +323,74 @@
   
   .close-btn:hover {
     background-color: #3a56d4;
+  }
+  
+  .form-helper {
+    font-size: 0.8rem;
+    color: var(--text-secondary, #6c757d);
+    margin-top: 0.5rem;
+  }
+  
+  .invite-status {
+    padding: 10px 16px;
+    border-radius: 4px;
+    margin-bottom: 16px;
+    font-size: 0.9rem;
+  }
+  
+  .invite-status.success {
+    background-color: rgba(16, 185, 129, 0.2);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+  }
+  
+  .invite-status.error {
+    background-color: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+  }
+  
+  .invitations-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+  }
+  
+  .invitation-item {
+    background-color: #f9fafb;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  .invitation-email {
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  
+  .invitation-date {
+    font-size: 0.75rem;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .cancel-invitation-btn {
+    background-color: transparent;
+    border: 1px solid #ef4444;
+    color: #ef4444;
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.75rem;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  
+  .cancel-invitation-btn:hover {
+    background-color: #ef4444;
+    color: white;
   }
   
   @media (max-width: 992px) {
@@ -393,8 +405,9 @@
       gap: 1rem;
     }
     
-    .team-details-header button {
-      align-self: flex-start;
+    .header-actions {
+      flex-direction: column;
+      align-items: flex-start;
     }
     
     .modal-content {

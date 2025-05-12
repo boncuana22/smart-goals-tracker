@@ -1,4 +1,5 @@
-const { KPI, Goal } = require('../models');
+const { KPI, Goal, Task } = require('../models');
+const { updateGoalProgress } = require('../utils/progressCalculator');
 
 // Obținere toate KPI-urile
 exports.getAllKPIs = async (req, res) => {
@@ -55,7 +56,11 @@ exports.createKPI = async (req, res) => {
     
     // Verificare că obiectivul aparține utilizatorului
     const goal = await Goal.findOne({
-      where: { id: goal_id, created_by: userId }
+      where: { id: goal_id, created_by: userId },
+      include: [
+        { model: Task, as: 'tasks' },
+        { model: KPI, as: 'kpis' }
+      ]
     });
     
     if (!goal) {
@@ -70,6 +75,9 @@ exports.createKPI = async (req, res) => {
       unit,
       goal_id
     });
+    
+    // Update goal progress based on the new KPI
+    await updateGoalProgress(goal, goal.tasks, [...goal.kpis, kpi]);
     
     res.status(201).json({ 
       message: 'KPI created successfully', 
@@ -112,6 +120,10 @@ exports.updateKPI = async (req, res) => {
       }
     }
     
+    // Store the old goal ID and old current value to check if they've changed
+    const oldGoalId = kpi.goal_id;
+    const oldCurrentValue = kpi.current_value;
+    
     await kpi.update({
       name,
       description,
@@ -120,6 +132,54 @@ exports.updateKPI = async (req, res) => {
       unit,
       goal_id: goal_id || kpi.goal_id
     });
+    
+    // If current value changed or goal_id changed, update goal progress
+    if (current_value !== oldCurrentValue || goal_id !== oldGoalId) {
+      // If KPI was assigned to a goal before update
+      if (oldGoalId) {
+        const oldGoal = await Goal.findByPk(oldGoalId, {
+          include: [
+            { model: Task, as: 'tasks' },
+            { model: KPI, as: 'kpis' }
+          ]
+        });
+        
+        if (oldGoal) {
+          // Update old goal progress (without the current KPI if goal changed)
+          await updateGoalProgress(
+            oldGoal, 
+            oldGoal.tasks, 
+            oldGoal.kpis.filter(k => k.id !== kpi.id)
+          );
+        }
+      }
+      
+      // If KPI is assigned to a goal after update
+      if (goal_id) {
+        const newGoal = await Goal.findByPk(goal_id, {
+          include: [
+            { model: Task, as: 'tasks' },
+            { model: KPI, as: 'kpis' }
+          ]
+        });
+        
+        if (newGoal) {
+          // Update new goal progress
+          // If the KPI is newly assigned to this goal, add it to kpis
+          if (goal_id !== oldGoalId) {
+            await updateGoalProgress(newGoal, newGoal.tasks, [...newGoal.kpis, kpi]);
+          } else {
+            // Otherwise update the KPI in newGoal.kpis with the new value
+            const kpiIndex = newGoal.kpis.findIndex(k => k.id === kpi.id);
+            if (kpiIndex >= 0) {
+              newGoal.kpis[kpiIndex].current_value = current_value;
+              newGoal.kpis[kpiIndex].target_value = target_value;
+            }
+            await updateGoalProgress(newGoal, newGoal.tasks, newGoal.kpis);
+          }
+        }
+      }
+    }
     
     res.status(200).json({ 
       message: 'KPI updated successfully', 
@@ -150,7 +210,24 @@ exports.deleteKPI = async (req, res) => {
       return res.status(404).json({ message: 'KPI not found or unauthorized' });
     }
     
+    // Store goal_id before deleting
+    const goalId = kpi.goal_id;
+    
     await kpi.destroy();
+    
+    // If KPI was assigned to a goal, update goal progress
+    if (goalId) {
+      const goal = await Goal.findByPk(goalId, {
+        include: [
+          { model: Task, as: 'tasks' },
+          { model: KPI, as: 'kpis' }
+        ]
+      });
+      
+      if (goal) {
+        await updateGoalProgress(goal, goal.tasks, goal.kpis);
+      }
+    }
     
     res.status(200).json({ 
       message: 'KPI deleted successfully' 
@@ -183,28 +260,28 @@ exports.updateKPIValue = async (req, res) => {
     
     await kpi.update({ current_value });
     
-    // Calculare progres obiectiv dacă target_value există
-    if (kpi.target_value > 0) {
-      const progress = Math.min(100, Math.round((current_value / kpi.target_value) * 100));
-      
-      // Actualizare progres obiectiv
-      const goal = await Goal.findByPk(kpi.goal_id);
-      if (goal) {
-        let status = goal.status;
-        if (progress === 100) {
-          status = 'Completed';
-        } else if (progress > 0) {
-          status = 'In Progress';
-        }
-        
-        await goal.update({ progress, status });
+    // Update goal progress based on the updated KPI
+    const goal = await Goal.findByPk(kpi.goal_id, {
+      include: [
+        { model: Task, as: 'tasks' },
+        { model: KPI, as: 'kpis' }
+      ]
+    });
+    
+    if (goal) {
+      // Update the KPI in goal.kpis with the new value
+      const kpiIndex = goal.kpis.findIndex(k => k.id === kpi.id);
+      if (kpiIndex >= 0) {
+        goal.kpis[kpiIndex].current_value = current_value;
       }
+      
+      await updateGoalProgress(goal, goal.tasks, goal.kpis);
     }
     
     res.status(200).json({ 
       message: 'KPI value updated successfully', 
       kpi,
-      goal: kpi.Goal
+      goal
     });
   } catch (error) {
     console.error('Update KPI value error:', error);

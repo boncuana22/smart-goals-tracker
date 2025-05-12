@@ -1,0 +1,182 @@
+.team-invite-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    padding: 2rem;
+    background-color: var(--primary-bg, #f8f9fa);
+  }
+  
+  .team-invite-card {
+    background-color: white;
+    border-radius: 1rem;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    width: 100%;
+    max-width: 500px;
+  }
+  
+  .team-invite-card h2 {
+    margin-top: 0;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: var(--text-primary, #333);
+  }
+  
+  .team-invite-card h3 {
+    margin: 1rem 0;
+    color: var(--text-primary, #333);
+  }
+  
+  .invitation-details {
+    margin-bottom: 2rem;
+    text-align: center;
+  }
+  
+  .invitation-details .team-description {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background-color: var(--secondary-bg, #f8f9fa);
+    border-radius: 0.5rem;
+    font-style: italic;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .invitation-email {
+    margin-top: 1rem;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  .invitation-actions, .invite-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 1.5rem;
+  }
+  
+  .info-message {
+    background-color: rgba(67, 97, 238, 0.1);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    color: var(--accent-color, #4361ee);
+    text-align: center;
+  }
+  
+  .warning-message {
+    background-color: rgba(251, 191, 36, 0.1);
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    color: #b45309;
+    text-align: center;
+  }
+  
+  .btn-primary, .btn-secondary {
+    padding: 0.75rem 1rem;
+    border-radius: 0.5rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    border: none;
+  }
+  
+  .btn-primary {
+    background-color: var(--accent-color, #4361ee);
+    color: white;
+  }
+  
+  .btn-primary:hover {
+    background-color: #3a56d4;
+  }
+  
+  .btn-primary:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  .btn-secondary {
+    background-color: #f2f2f2;
+    color: #333;
+  }
+  
+  .btn-secondary:hover {
+    background-color: #e6e6e6;
+  }
+  
+  .registration-section {
+    margin-top: 1.5rem;
+  }
+  
+  .form-group {
+    margin-bottom: 1rem;
+  }
+  
+  .form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    color: var(--text-primary, #333);
+  }
+  
+  .form-control {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+  }
+  
+  .form-control:focus {
+    border-color: var(--accent-color, #4361ee);
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.2);
+  }
+  
+  /* Loading spinner */
+  .team-invite-card.loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 200px;
+  }
+  
+  .spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top-color: var(--accent-color, #4361ee);
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+  }
+  
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+  
+  /* Error state */
+  .team-invite-card.error {
+    text-align: center;
+  }
+  
+  .team-invite-card.error h2 {
+    color: #ef4444;
+  }
+  
+  .team-invite-card.error p {
+    margin-bottom: 1.5rem;
+    color: var(--text-secondary, #6c757d);
+  }
+  
+  @media (max-width: 576px) {
+    .team-invite-container {
+      padding: 1rem;
+    }
+    
+    .team-invite-card {
+      padding: 1.5rem;
+    }
+  }

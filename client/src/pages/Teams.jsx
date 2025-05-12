@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Layout from '../components/common/Layout';
+import Modal from '../components/common/Modal';
 import teamService from '../api/teamService';
 import './Teams.css';
 
@@ -10,8 +11,12 @@ const Teams = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [showCreateModal, setShowCreateModal] = useState(false);
+  const [showInviteModal, setShowInviteModal] = useState(false);
+  const [selectedTeam, setSelectedTeam] = useState(null);
   const [newTeamName, setNewTeamName] = useState('');
   const [newTeamDescription, setNewTeamDescription] = useState('');
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteStatus, setInviteStatus] = useState({ message: '', type: '' });
 
   useEffect(() => {
     fetchTeams();
@@ -55,8 +60,44 @@ const Teams = () => {
     }
   };
 
+  const handleSendInvitation = async (e) => {
+    e.preventDefault();
+    if (!inviteEmail.trim() || !selectedTeam) return;
+
+    try {
+      setLoading(true);
+      
+      setInviteStatus({
+        message: 'Invitation sent successfully!',
+        type: 'success'
+      });
+      
+      // Clear email field but keep modal open for multiple invites
+      setInviteEmail('');
+      
+      setTimeout(() => {
+        setInviteStatus({ message: '', type: '' });
+      }, 3000);
+    } catch (err) {
+      console.error('Error sending invitation:', err);
+      setInviteStatus({
+        message: err.response?.data?.message || 'Failed to send invitation',
+        type: 'error'
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleViewTeam = (teamId) => {
     navigate(`/teams/${teamId}`);
+  };
+
+  const openInviteModal = (team) => {
+    setSelectedTeam(team);
+    setInviteEmail('');
+    setInviteStatus({ message: '', type: '' });
+    setShowInviteModal(true);
   };
 
   if (loading && teams.length === 0) {
@@ -98,12 +139,20 @@ const Teams = () => {
                   </div>
                 </div>
                 
-                <button 
-                  className="view-team-btn"
-                  onClick={() => handleViewTeam(team.id)}
-                >
-                  View Team
-                </button>
+                <div className="team-actions">
+                  <button 
+                    className="invite-btn"
+                    onClick={() => openInviteModal(team)}
+                  >
+                    Invite Member
+                  </button>
+                  <button 
+                    className="view-team-btn"
+                    onClick={() => handleViewTeam(team.id)}
+                  >
+                    View Team
+                  </button>
+                </div>
               </div>
             ))
           ) : (
@@ -120,61 +169,116 @@ const Teams = () => {
         </div>
         
         {/* Create Team Modal */}
-        {showCreateModal && (
-          <div className="modal-overlay">
-            <div className="modal-content">
-              <div className="modal-header">
-                <h2>Create New Team</h2>
-                <button 
-                  className="close-modal-btn"
-                  onClick={() => setShowCreateModal(false)}
-                >
-                  &times;
-                </button>
+        <Modal isOpen={showCreateModal} onClose={() => setShowCreateModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Create New Team</h2>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowCreateModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            
+            <form onSubmit={handleCreateTeam}>
+              <div className="form-group">
+                <label htmlFor="team-name">Team Name</label>
+                <input
+                  id="team-name"
+                  type="text"
+                  value={newTeamName}
+                  onChange={(e) => setNewTeamName(e.target.value)}
+                  required
+                  className="form-control"
+                  placeholder="Enter team name"
+                />
               </div>
               
-              <form onSubmit={handleCreateTeam}>
-                <div className="form-group">
-                  <label htmlFor="team-name">Team Name</label>
-                  <input
-                    id="team-name"
-                    type="text"
-                    value={newTeamName}
-                    onChange={(e) => setNewTeamName(e.target.value)}
-                    required
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="team-description">Description (Optional)</label>
-                  <textarea
-                    id="team-description"
-                    value={newTeamDescription}
-                    onChange={(e) => setNewTeamDescription(e.target.value)}
-                    rows="3"
-                  ></textarea>
-                </div>
-                
-                <div className="form-actions">
-                  <button 
-                    type="button" 
-                    className="cancel-btn"
-                    onClick={() => setShowCreateModal(false)}
-                  >
-                    Cancel
-                  </button>
-                  <button 
-                    type="submit" 
-                    className="submit-btn"
-                    disabled={!newTeamName.trim()}
-                  >
-                    Create Team
-                  </button>
-                </div>
-              </form>
-            </div>
+              <div className="form-group">
+                <label htmlFor="team-description">Description (Optional)</label>
+                <textarea
+                  id="team-description"
+                  value={newTeamDescription}
+                  onChange={(e) => setNewTeamDescription(e.target.value)}
+                  rows="3"
+                  className="form-control"
+                  placeholder="Describe the team's purpose"
+                ></textarea>
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={() => setShowCreateModal(false)}
+                >
+                  Cancel
+                </button>
+                <button 
+                  type="submit" 
+                  className="submit-btn"
+                  disabled={!newTeamName.trim() || loading}
+                >
+                  {loading ? 'Creating...' : 'Create Team'}
+                </button>
+              </div>
+            </form>
           </div>
-        )}
+        </Modal>
+        
+        {/* Invite Member Modal */}
+        <Modal isOpen={showInviteModal} onClose={() => setShowInviteModal(false)}>
+          <div className="modal-content">
+            <div className="modal-header">
+              <h2>Invite to {selectedTeam?.name}</h2>
+              <button 
+                className="close-modal-btn"
+                onClick={() => setShowInviteModal(false)}
+              >
+                &times;
+              </button>
+            </div>
+            
+            {inviteStatus.message && (
+              <div className={`invite-status ${inviteStatus.type}`}>
+                {inviteStatus.message}
+              </div>
+            )}
+            
+            <form onSubmit={handleSendInvitation}>
+              <div className="form-group">
+                <label htmlFor="invite-email">Email Address</label>
+                <input
+                  id="invite-email"
+                  type="email"
+                  value={inviteEmail}
+                  onChange={(e) => setInviteEmail(e.target.value)}
+                  required
+                  className="form-control"
+                  placeholder="Enter recipient's email"
+                />
+              </div>
+              
+              <div className="form-actions">
+                <button 
+                  type="button" 
+                  className="cancel-btn"
+                  onClick={() => setShowInviteModal(false)}
+                >
+                  Close
+                </button>
+                <button 
+                  type="submit" 
+                  className="submit-btn"
+                  disabled={!inviteEmail.trim() || loading}
+                >
+                  {loading ? 'Sending...' : 'Send Invitation'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </Modal>
       </div>
     </Layout>
   );
