@@ -129,6 +129,7 @@ const GoalDetail = ({
         <div className="section-header">
           <h3>Key Performance Indicators</h3>
           <button className="btn btn-primary" onClick={handleAddKPI}>
+            <i className="fas fa-plus"></i>
             Add KPI
           </button>
         </div>
@@ -147,7 +148,11 @@ const GoalDetail = ({
           </div>
         ) : (
           <div className="empty-kpis">
-            No KPIs defined for this goal yet.
+            <p>No KPIs defined for this goal yet.</p>
+            <button className="btn btn-primary" onClick={handleAddKPI}>
+              <i className="fas fa-plus"></i>
+              Add Your First KPI
+            </button>
           </div>
         )}
       </div>

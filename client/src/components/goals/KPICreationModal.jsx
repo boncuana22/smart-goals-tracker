@@ -103,15 +103,17 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
   // Step 1: Choose KPI Type
   const renderStep1 = () => (
     <div className="kpi-step">
-      <h3>Choose KPI Type</h3>
-      <p className="step-description">What type of KPI do you want to create?</p>
+      <h3>Step 1 of 4 | Choose KPI Type</h3>
+      <p className="step-description">What type of KPI do you want to create for "{goal.title}"?</p>
       
       <div className="kpi-type-options">
         <div 
           className={`kpi-type-option ${kpiData.type === 'operational' ? 'selected' : ''}`}
           onClick={() => handleInputChange('type', 'operational')}
         >
-          <div className="type-icon">📊</div>
+          <div className="type-icon">
+            <i className="fas fa-chart-line"></i>
+          </div>
           <h4>Operational KPI</h4>
           <p>Measures progress through tasks</p>
           <ul>
@@ -119,14 +121,16 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
             <li>Progress = Task completion percentage</li>
             <li>Perfect for process-driven goals</li>
           </ul>
-          {kpiData.type === 'operational' && <div className="selection-indicator">✓</div>}
+          {kpiData.type === 'operational' && <div className="selection-indicator"><i className="fas fa-check"></i></div>}
         </div>
         
         <div 
           className={`kpi-type-option ${kpiData.type === 'financial' ? 'selected' : ''}`}
           onClick={() => handleInputChange('type', 'financial')}
         >
-          <div className="type-icon">💰</div>
+          <div className="type-icon">
+            <i className="fas fa-coins"></i>
+          </div>
           <h4>Financial KPI</h4>
           <p>Tracks financial metrics</p>
           <ul>
@@ -134,7 +138,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
             <li>Automatically syncs with uploaded financial data</li>
             <li>Can include supporting tasks</li>
           </ul>
-          {kpiData.type === 'financial' && <div className="selection-indicator">✓</div>}
+          {kpiData.type === 'financial' && <div className="selection-indicator"><i className="fas fa-check"></i></div>}
         </div>
       </div>
       
@@ -145,7 +149,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
   // Step 2: KPI Details
   const renderStep2 = () => (
     <div className="kpi-step">
-      <h3>{kpiData.type === 'operational' ? 'Operational' : 'Financial'} KPI Details</h3>
+      <h3>Step 2 of 4 | {kpiData.type === 'operational' ? 'Operational' : 'Financial'} KPI Details</h3>
       
       <div className="form-group">
         <label htmlFor="kpi-name">KPI Name</label>
@@ -277,7 +281,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
   // Step 3: Set Weight
   const renderStep3 = () => (
     <div className="kpi-step">
-      <h3>Set KPI Weight in Goal</h3>
+      <h3>Step 3 of 4 | Set KPI Weight in Goal</h3>
       <p className="step-description">How important is this KPI for reaching "{goal.title}"?</p>
       
       <div className="weight-visualization">
@@ -342,7 +346,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
   // Step 4: Review & Confirm
   const renderStep4 = () => (
     <div className="kpi-step">
-      <h3>Review Your KPI</h3>
+      <h3>Step 4 of 4 | Review Your KPI</h3>
       
       <div className="kpi-review">
         <div className="review-header">
@@ -447,7 +451,6 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
             <button 
               className="btn btn-primary" 
               onClick={handleNext}
-              disabled={!validateStep(currentStep)}
             >
               Next: {currentStep === 1 ? 'Set Details' : currentStep === 2 ? 'Set Weight' : 'Review'}
             </button>
