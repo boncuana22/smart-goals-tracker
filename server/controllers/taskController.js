@@ -10,7 +10,8 @@ exports.getAllTasks = async (req, res) => {
       where: { user_id: userId },
       include: [
         { model: User, attributes: ['id', 'username'] },
-        { model: Goal, attributes: ['id', 'title'] }
+        { model: Goal, attributes: ['id', 'title'] },
+        { model: KPI, attributes: ['id', 'name', 'kpi_type'] }
       ],
       order: [['createdAt', 'DESC']]
     });
@@ -32,7 +33,8 @@ exports.getTaskById = async (req, res) => {
       where: { id, user_id: userId },
       include: [
         { model: User, attributes: ['id', 'username'] },
-        { model: Goal, attributes: ['id', 'title'] }
+        { model: Goal, attributes: ['id', 'title'] },
+        { model: KPI, attributes: ['id', 'name', 'kpi_type'] }
       ]
     });
     
@@ -50,8 +52,31 @@ exports.getTaskById = async (req, res) => {
 // Creare task nou
 exports.createTask = async (req, res) => {
   try {
-    const { title, description, status, priority, due_date, goal_id } = req.body;
+    const { title, description, status, priority, due_date, goal_id, kpi_id } = req.body;
     const userId = req.user.id;
+    
+    // Validare - task-ul trebuie să aibă goal_id sau kpi_id (sau amblele)
+    if (!goal_id && !kpi_id) {
+      return res.status(400).json({ message: 'Task must be associated with either a goal or a KPI' });
+    }
+    
+    // Dacă e asociat cu un KPI, obține goal_id automat
+    let associatedGoalId = goal_id;
+    if (kpi_id && !goal_id) {
+      const kpi = await KPI.findByPk(kpi_id, {
+        include: [{ 
+          model: Goal,
+          where: { created_by: userId },
+          attributes: ['id']
+        }]
+      });
+      
+      if (!kpi || !kpi.Goal) {
+        return res.status(404).json({ message: 'KPI not found or unauthorized' });
+      }
+      
+      associatedGoalId = kpi.Goal.id;
+    }
     
     const task = await Task.create({
       title,
@@ -60,21 +85,24 @@ exports.createTask = async (req, res) => {
       priority,
       due_date,
       user_id: userId,
-      goal_id
+      goal_id: associatedGoalId,
+      kpi_id
     });
     
-    // If task is linked to a goal, update goal progress
-    if (goal_id) {
-      const goal = await Goal.findByPk(goal_id, {
+    // Update goal progress
+    if (associatedGoalId) {
+      const goal = await Goal.findByPk(associatedGoalId, {
         include: [
-          { model: Task, as: 'tasks' },
-          { model: KPI, as: 'kpis' }
+          { 
+            model: KPI, 
+            as: 'kpis',
+            include: [{ model: Task, as: 'tasks' }]
+          }
         ]
       });
       
       if (goal) {
-        // Update goal progress based on tasks
-        await updateGoalProgress(goal, [...goal.tasks, task], goal.kpis);
+        await updateGoalProgress(goal, goal.kpis);
       }
     }
     
@@ -92,7 +120,7 @@ exports.createTask = async (req, res) => {
 exports.updateTask = async (req, res) => {
   try {
     const { id } = req.params;
-    const { title, description, status, priority, due_date, goal_id } = req.body;
+    const { title, description, status, priority, due_date, goal_id, kpi_id } = req.body;
     const userId = req.user.id;
     
     const task = await Task.findOne({ 
@@ -103,9 +131,28 @@ exports.updateTask = async (req, res) => {
       return res.status(404).json({ message: 'Task not found' });
     }
     
-    // Store old goal ID and status to check if they've changed
+    // Store old values to check if they've changed
     const oldGoalId = task.goal_id;
+    const oldKpiId = task.kpi_id;
     const oldStatus = task.status;
+    
+    // Dacă e asociat cu un KPI nou, obține goal_id automat
+    let associatedGoalId = goal_id;
+    if (kpi_id && kpi_id !== oldKpiId) {
+      const kpi = await KPI.findByPk(kpi_id, {
+        include: [{ 
+          model: Goal,
+          where: { created_by: userId },
+          attributes: ['id']
+        }]
+      });
+      
+      if (!kpi || !kpi.Goal) {
+        return res.status(404).json({ message: 'KPI not found or unauthorized' });
+      }
+      
+      associatedGoalId = kpi.Goal.id;
+    }
     
     await task.update({
       title,
@@ -113,48 +160,44 @@ exports.updateTask = async (req, res) => {
       status,
       priority,
       due_date,
-      goal_id
+      goal_id: associatedGoalId || task.goal_id,
+      kpi_id
     });
     
-    // If task status changed or goal_id changed, update goal progress
-    if (status !== oldStatus || goal_id !== oldGoalId) {
+    // If task status, goal_id, or kpi_id changed, update goal progress
+    if (status !== oldStatus || goal_id !== oldGoalId || kpi_id !== oldKpiId) {
       // If task was assigned to a goal before update
       if (oldGoalId) {
         const oldGoal = await Goal.findByPk(oldGoalId, {
           include: [
-            { model: Task, as: 'tasks' },
-            { model: KPI, as: 'kpis' }
+            { 
+              model: KPI, 
+              as: 'kpis',
+              include: [{ model: Task, as: 'tasks' }]
+            }
           ]
         });
         
         if (oldGoal) {
-          // Update old goal progress (without the current task if goal changed)
-          await updateGoalProgress(
-            oldGoal, 
-            oldGoal.tasks.filter(t => t.id !== task.id), 
-            oldGoal.kpis
-          );
+          await updateGoalProgress(oldGoal, oldGoal.kpis);
         }
       }
       
       // If task is assigned to a goal after update
-      if (goal_id) {
-        const newGoal = await Goal.findByPk(goal_id, {
+      const newGoalId = associatedGoalId || task.goal_id;
+      if (newGoalId && newGoalId !== oldGoalId) {
+        const newGoal = await Goal.findByPk(newGoalId, {
           include: [
-            { model: Task, as: 'tasks' },
-            { model: KPI, as: 'kpis' }
+            { 
+              model: KPI, 
+              as: 'kpis',
+              include: [{ model: Task, as: 'tasks' }]
+            }
           ]
         });
         
         if (newGoal) {
-          // Update new goal progress
-          // If the task is newly assigned to this goal, add it to tasks
-          if (goal_id !== oldGoalId) {
-            await updateGoalProgress(newGoal, [...newGoal.tasks, task], newGoal.kpis);
-          } else {
-            // Otherwise the task is already in newGoal.tasks
-            await updateGoalProgress(newGoal, newGoal.tasks, newGoal.kpis);
-          }
+          await updateGoalProgress(newGoal, newGoal.kpis);
         }
       }
     }
@@ -192,13 +235,16 @@ exports.deleteTask = async (req, res) => {
     if (goalId) {
       const goal = await Goal.findByPk(goalId, {
         include: [
-          { model: Task, as: 'tasks' },
-          { model: KPI, as: 'kpis' }
+          { 
+            model: KPI, 
+            as: 'kpis',
+            include: [{ model: Task, as: 'tasks' }]
+          }
         ]
       });
       
       if (goal) {
-        await updateGoalProgress(goal, goal.tasks, goal.kpis);
+        await updateGoalProgress(goal, goal.kpis);
       }
     }
     
@@ -221,7 +267,8 @@ exports.getTasksByStatus = async (req, res) => {
       where: { status, user_id: userId },
       include: [
         { model: User, attributes: ['id', 'username'] },
-        { model: Goal, attributes: ['id', 'title'] }
+        { model: Goal, attributes: ['id', 'title'] },
+        { model: KPI, attributes: ['id', 'name', 'kpi_type'] }
       ],
       order: [['due_date', 'ASC']]
     });
@@ -233,6 +280,7 @@ exports.getTasksByStatus = async (req, res) => {
   }
 };
 
+// Actualizare status task
 exports.updateTaskStatus = async (req, res) => {
   try {
     const { id } = req.params;
@@ -258,19 +306,16 @@ exports.updateTaskStatus = async (req, res) => {
     if (oldStatus !== status && task.goal_id) {
       const goal = await Goal.findByPk(task.goal_id, {
         include: [
-          { model: Task, as: 'tasks' },
-          { model: KPI, as: 'kpis' }
+          { 
+            model: KPI, 
+            as: 'kpis',
+            include: [{ model: Task, as: 'tasks' }]
+          }
         ]
       });
       
       if (goal) {
-        // Find task in goal.tasks and update its status
-        const taskIndex = goal.tasks.findIndex(t => t.id === task.id);
-        if (taskIndex >= 0) {
-          goal.tasks[taskIndex].status = status;
-        }
-        
-        await updateGoalProgress(goal, goal.tasks, goal.kpis);
+        await updateGoalProgress(goal, goal.kpis);
       }
     }
     
@@ -281,5 +326,75 @@ exports.updateTaskStatus = async (req, res) => {
   } catch (error) {
     console.error('Update task status error:', error);
     res.status(500).json({ message: 'Failed to update task status', error: error.message });
+  }
+};
+
+// Obținere task-uri după KPI
+exports.getTasksByKPI = async (req, res) => {
+  try {
+    const { kpiId } = req.params;
+    const userId = req.user.id;
+    
+    // Verifică că KPI-ul aparține utilizatorului
+    const kpi = await KPI.findOne({
+      where: { id: kpiId },
+      include: [{
+        model: Goal,
+        where: { created_by: userId }
+      }]
+    });
+    
+    if (!kpi) {
+      return res.status(404).json({ message: 'KPI not found or unauthorized' });
+    }
+    
+    // Obține toate task-urile asociate acestui KPI
+    const tasks = await Task.findAll({
+      where: { kpi_id: kpiId, user_id: userId },
+      include: [
+        { model: User, attributes: ['id', 'username'] },
+        { model: Goal, attributes: ['id', 'title'] },
+        { model: KPI, attributes: ['id', 'name', 'kpi_type'] }
+      ],
+      order: [['due_date', 'ASC']]
+    });
+    
+    res.status(200).json({ tasks });
+  } catch (error) {
+    console.error('Get tasks by KPI error:', error);
+    res.status(500).json({ message: 'Failed to get tasks', error: error.message });
+  }
+};
+
+// Obținere task-uri după Goal
+exports.getTasksByGoal = async (req, res) => {
+  try {
+    const { goalId } = req.params;
+    const userId = req.user.id;
+    
+    // Verifică că goal-ul aparține utilizatorului
+    const goal = await Goal.findOne({
+      where: { id: goalId, created_by: userId }
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ message: 'Goal not found or unauthorized' });
+    }
+    
+    // Obține toate task-urile asociate acestui goal
+    const tasks = await Task.findAll({
+      where: { goal_id: goalId, user_id: userId },
+      include: [
+        { model: User, attributes: ['id', 'username'] },
+        { model: Goal, attributes: ['id', 'title'] },
+        { model: KPI, attributes: ['id', 'name', 'kpi_type'] }
+      ],
+      order: [['due_date', 'ASC']]
+    });
+    
+    res.status(200).json({ tasks });
+  } catch (error) {
+    console.error('Get tasks by goal error:', error);
+    res.status(500).json({ message: 'Failed to get tasks', error: error.message });
   }
 };

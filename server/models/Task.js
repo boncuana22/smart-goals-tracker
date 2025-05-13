@@ -25,6 +25,11 @@ const Task = sequelize.define('Task', {
   due_date: {
     type: DataTypes.DATE
   },
+  kpi_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'KPI asociat cu acest task (pentru KPI-uri operaționale)'
+  }
   // user_id și goal_id vor fi adăugate prin asocieri
 }, {
   timestamps: true

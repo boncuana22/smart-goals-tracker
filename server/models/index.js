@@ -56,6 +56,10 @@ TeamInvitation.belongsTo(Team, { foreignKey: 'team_id' });
 User.hasMany(TeamInvitation, { foreignKey: 'invited_by', as: 'sentInvitations' });
 TeamInvitation.belongsTo(User, { foreignKey: 'invited_by', as: 'inviter' });
 
+// Relații Task - KPI
+KPI.hasMany(Task, { foreignKey: 'kpi_id', as: 'tasks' });
+Task.belongsTo(KPI, { foreignKey: 'kpi_id' });
+
 module.exports = {
   User,
   Task,

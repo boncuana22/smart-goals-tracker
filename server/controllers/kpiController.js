@@ -7,11 +7,21 @@ exports.getAllKPIs = async (req, res) => {
     const userId = req.user.id;
     
     const kpis = await KPI.findAll({
-      include: [{ 
-        model: Goal,
-        where: { created_by: userId },
-        attributes: ['id', 'title']
-      }],
+      include: [
+        { 
+          model: Goal,
+          where: { created_by: userId },
+          attributes: ['id', 'title']
+        },
+        {
+          model: Task,
+          as: 'tasks',
+          attributes: ['id', 'title', 'status', 'due_date', 'priority'],
+          include: [
+            { model: User, attributes: ['id', 'username'] }
+          ]
+        }
+      ],
       order: [['createdAt', 'DESC']]
     });
     
@@ -30,11 +40,21 @@ exports.getKPIById = async (req, res) => {
     
     const kpi = await KPI.findOne({
       where: { id },
-      include: [{ 
-        model: Goal,
-        where: { created_by: userId },
-        attributes: ['id', 'title']
-      }]
+      include: [
+        { 
+          model: Goal,
+          where: { created_by: userId },
+          attributes: ['id', 'title']
+        },
+        {
+          model: Task,
+          as: 'tasks',
+          attributes: ['id', 'title', 'status', 'due_date', 'priority'],
+          include: [
+            { model: User, attributes: ['id', 'username'] }
+          ]
+        }
+      ]
     });
     
     if (!kpi) {
@@ -51,20 +71,59 @@ exports.getKPIById = async (req, res) => {
 // Creare KPI nou
 exports.createKPI = async (req, res) => {
   try {
-    const { name, description, target_value, current_value, unit, goal_id } = req.body;
+    const { 
+      name, 
+      description, 
+      target_value, 
+      current_value, 
+      unit, 
+      goal_id,
+      // Câmpuri noi pentru ponderi
+      weight_in_goal,
+      kpi_type,
+      financial_progress_weight,
+      tasks_progress_weight
+    } = req.body;
+    
     const userId = req.user.id;
+    
+    // Verifică că procentajele sunt valide pentru KPI-urile financiare
+    if (kpi_type === 'financial') {
+      const fin_weight = parseFloat(financial_progress_weight || 100);
+      const task_weight = parseFloat(tasks_progress_weight || 0);
+      const totalWeight = fin_weight + task_weight;
+      
+      if (Math.abs(totalWeight - 100) > 0.01) { // Allow for small floating point errors
+        return res.status(400).json({ 
+          message: 'Financial and tasks progress weights must add up to 100%' 
+        });
+      }
+    }
     
     // Verificare că obiectivul aparține utilizatorului
     const goal = await Goal.findOne({
       where: { id: goal_id, created_by: userId },
       include: [
-        { model: Task, as: 'tasks' },
-        { model: KPI, as: 'kpis' }
+        { 
+          model: KPI, 
+          as: 'kpis',
+          include: [{ model: Task, as: 'tasks' }]
+        }
       ]
     });
     
     if (!goal) {
       return res.status(404).json({ message: 'Goal not found or unauthorized' });
+    }
+    
+    // Verifică că suma ponderilor în goal nu depășește 100%
+    const existingWeightsSum = goal.kpis.reduce((sum, kpi) => sum + (parseFloat(kpi.weight_in_goal) || 0), 0);
+    const newWeight = parseFloat(weight_in_goal || 0);
+    
+    if (existingWeightsSum + newWeight > 100) {
+      return res.status(400).json({ 
+        message: `Total weight would exceed 100%. Current total: ${existingWeightsSum}%, trying to add: ${newWeight}%` 
+      });
     }
     
     const kpi = await KPI.create({
@@ -73,11 +132,26 @@ exports.createKPI = async (req, res) => {
       target_value,
       current_value: current_value || 0,
       unit,
-      goal_id
+      goal_id,
+      weight_in_goal: weight_in_goal || 0,
+      kpi_type: kpi_type || 'operational',
+      financial_progress_weight: financial_progress_weight || 100,
+      tasks_progress_weight: tasks_progress_weight || 0
+    });
+    
+    // Reload goal with updated KPIs
+    const updatedGoal = await Goal.findByPk(goal_id, {
+      include: [
+        { 
+          model: KPI, 
+          as: 'kpis',
+          include: [{ model: Task, as: 'tasks' }]
+        }
+      ]
     });
     
     // Update goal progress based on the new KPI
-    await updateGoalProgress(goal, goal.tasks, [...goal.kpis, kpi]);
+    await updateGoalProgress(updatedGoal, updatedGoal.kpis);
     
     res.status(201).json({ 
       message: 'KPI created successfully', 
@@ -93,8 +167,34 @@ exports.createKPI = async (req, res) => {
 exports.updateKPI = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, target_value, current_value, unit, goal_id } = req.body;
+    const { 
+      name, 
+      description, 
+      target_value, 
+      current_value, 
+      unit, 
+      goal_id,
+      // Câmpuri noi pentru ponderi
+      weight_in_goal,
+      kpi_type,
+      financial_progress_weight,
+      tasks_progress_weight
+    } = req.body;
+    
     const userId = req.user.id;
+    
+    // Verifică că procentajele sunt valide pentru KPI-urile financiare
+    if (kpi_type === 'financial') {
+      const fin_weight = parseFloat(financial_progress_weight || 100);
+      const task_weight = parseFloat(tasks_progress_weight || 0);
+      const totalWeight = fin_weight + task_weight;
+      
+      if (Math.abs(totalWeight - 100) > 0.01) {
+        return res.status(400).json({ 
+          message: 'Financial and tasks progress weights must add up to 100%' 
+        });
+      }
+    }
     
     // Verificare că KPI-ul aparține unui obiectiv al utilizatorului
     const kpi = await KPI.findOne({
@@ -120,9 +220,31 @@ exports.updateKPI = async (req, res) => {
       }
     }
     
-    // Store the old goal ID and old current value to check if they've changed
+    // Verifică că suma ponderilor în goal nu depășește 100%
+    const goalToCheck = goal_id || kpi.goal_id;
+    const goalWithKpis = await Goal.findByPk(goalToCheck, {
+      include: [{ model: KPI, as: 'kpis' }]
+    });
+    
+    if (goalWithKpis) {
+      const existingWeightsSum = goalWithKpis.kpis
+        .filter(k => k.id !== kpi.id) // Exclude current KPI
+        .reduce((sum, k) => sum + (parseFloat(k.weight_in_goal) || 0), 0);
+      
+      const newWeight = parseFloat(weight_in_goal || kpi.weight_in_goal || 0);
+      
+      if (existingWeightsSum + newWeight > 100) {
+        return res.status(400).json({ 
+          message: `Total weight would exceed 100%. Current total (excluding this KPI): ${existingWeightsSum}%, trying to set: ${newWeight}%` 
+        });
+      }
+    }
+    
+    // Store the old values
     const oldGoalId = kpi.goal_id;
     const oldCurrentValue = kpi.current_value;
+    const oldWeightInGoal = kpi.weight_in_goal;
+    const oldKpiType = kpi.kpi_type;
     
     await kpi.update({
       name,
@@ -130,53 +252,49 @@ exports.updateKPI = async (req, res) => {
       target_value,
       current_value,
       unit,
-      goal_id: goal_id || kpi.goal_id
+      goal_id: goal_id || kpi.goal_id,
+      weight_in_goal: weight_in_goal !== undefined ? weight_in_goal : kpi.weight_in_goal,
+      kpi_type: kpi_type || kpi.kpi_type,
+      financial_progress_weight: financial_progress_weight !== undefined ? financial_progress_weight : kpi.financial_progress_weight,
+      tasks_progress_weight: tasks_progress_weight !== undefined ? tasks_progress_weight : kpi.tasks_progress_weight
     });
     
-    // If current value changed or goal_id changed, update goal progress
-    if (current_value !== oldCurrentValue || goal_id !== oldGoalId) {
+    // If significant values changed, update goal progress
+    if (current_value !== oldCurrentValue || goal_id !== oldGoalId || 
+        weight_in_goal !== oldWeightInGoal || kpi_type !== oldKpiType) {
+      
       // If KPI was assigned to a goal before update
       if (oldGoalId) {
         const oldGoal = await Goal.findByPk(oldGoalId, {
           include: [
-            { model: Task, as: 'tasks' },
-            { model: KPI, as: 'kpis' }
+            { 
+              model: KPI, 
+              as: 'kpis',
+              include: [{ model: Task, as: 'tasks' }]
+            }
           ]
         });
         
         if (oldGoal) {
-          // Update old goal progress (without the current KPI if goal changed)
-          await updateGoalProgress(
-            oldGoal, 
-            oldGoal.tasks, 
-            oldGoal.kpis.filter(k => k.id !== kpi.id)
-          );
+          await updateGoalProgress(oldGoal, oldGoal.kpis);
         }
       }
       
       // If KPI is assigned to a goal after update
-      if (goal_id) {
-        const newGoal = await Goal.findByPk(goal_id, {
+      const newGoalId = goal_id || kpi.goal_id;
+      if (newGoalId && newGoalId !== oldGoalId) {
+        const newGoal = await Goal.findByPk(newGoalId, {
           include: [
-            { model: Task, as: 'tasks' },
-            { model: KPI, as: 'kpis' }
+            { 
+              model: KPI, 
+              as: 'kpis',
+              include: [{ model: Task, as: 'tasks' }]
+            }
           ]
         });
         
         if (newGoal) {
-          // Update new goal progress
-          // If the KPI is newly assigned to this goal, add it to kpis
-          if (goal_id !== oldGoalId) {
-            await updateGoalProgress(newGoal, newGoal.tasks, [...newGoal.kpis, kpi]);
-          } else {
-            // Otherwise update the KPI in newGoal.kpis with the new value
-            const kpiIndex = newGoal.kpis.findIndex(k => k.id === kpi.id);
-            if (kpiIndex >= 0) {
-              newGoal.kpis[kpiIndex].current_value = current_value;
-              newGoal.kpis[kpiIndex].target_value = target_value;
-            }
-            await updateGoalProgress(newGoal, newGoal.tasks, newGoal.kpis);
-          }
+          await updateGoalProgress(newGoal, newGoal.kpis);
         }
       }
     }
@@ -219,13 +337,16 @@ exports.deleteKPI = async (req, res) => {
     if (goalId) {
       const goal = await Goal.findByPk(goalId, {
         include: [
-          { model: Task, as: 'tasks' },
-          { model: KPI, as: 'kpis' }
+          { 
+            model: KPI, 
+            as: 'kpis',
+            include: [{ model: Task, as: 'tasks' }]
+          }
         ]
       });
       
       if (goal) {
-        await updateGoalProgress(goal, goal.tasks, goal.kpis);
+        await updateGoalProgress(goal, goal.kpis);
       }
     }
     
@@ -263,28 +384,83 @@ exports.updateKPIValue = async (req, res) => {
     // Update goal progress based on the updated KPI
     const goal = await Goal.findByPk(kpi.goal_id, {
       include: [
-        { model: Task, as: 'tasks' },
-        { model: KPI, as: 'kpis' }
+        { 
+          model: KPI, 
+          as: 'kpis',
+          include: [{ model: Task, as: 'tasks' }]
+        }
       ]
     });
     
     if (goal) {
-      // Update the KPI in goal.kpis with the new value
-      const kpiIndex = goal.kpis.findIndex(k => k.id === kpi.id);
-      if (kpiIndex >= 0) {
-        goal.kpis[kpiIndex].current_value = current_value;
-      }
-      
-      await updateGoalProgress(goal, goal.tasks, goal.kpis);
+      await updateGoalProgress(goal, goal.kpis);
     }
     
     res.status(200).json({ 
       message: 'KPI value updated successfully', 
       kpi,
-      goal
+      goal: goal ? {
+        id: goal.id,
+        progress: goal.progress,
+        status: goal.status
+      } : null
     });
   } catch (error) {
     console.error('Update KPI value error:', error);
     res.status(500).json({ message: 'Failed to update KPI value', error: error.message });
+  }
+};
+
+// Recalculare progres KPI
+exports.recalculateKPIProgress = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    
+    // Găsește KPI-ul cu task-urile lui
+    const kpi = await KPI.findOne({
+      where: { id },
+      include: [
+        { 
+          model: Goal,
+          where: { created_by: userId }
+        },
+        {
+          model: Task,
+          as: 'tasks'
+        }
+      ]
+    });
+    
+    if (!kpi) {
+      return res.status(404).json({ message: 'KPI not found or unauthorized' });
+    }
+    
+    // Recalculează progresul goal-ului la care aparține acest KPI
+    const goal = await Goal.findByPk(kpi.Goal.id, {
+      include: [
+        { 
+          model: KPI, 
+          as: 'kpis',
+          include: [{ model: Task, as: 'tasks' }]
+        }
+      ]
+    });
+    
+    if (goal) {
+      await updateGoalProgress(goal, goal.kpis);
+    }
+    
+    res.status(200).json({ 
+      message: 'KPI progress recalculated successfully',
+      goal: goal ? {
+        id: goal.id,
+        progress: goal.progress,
+        status: goal.status
+      } : null
+    });
+  } catch (error) {
+    console.error('Recalculate KPI progress error:', error);
+    res.status(500).json({ message: 'Failed to recalculate KPI progress', error: error.message });
   }
 };

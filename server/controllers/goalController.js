@@ -1,5 +1,6 @@
 const { Goal, Task, KPI, User, TeamMember } = require('../models');
 const { Op } = require('sequelize');
+const { updateGoalProgress } = require('../utils/progressCalculator');
 
 // Obținere toate obiectivele
 exports.getAllGoals = async (req, res) => {
@@ -28,12 +29,19 @@ exports.getAllGoals = async (req, res) => {
         { 
           model: Task, 
           as: 'tasks',
-          attributes: ['id', 'title', 'status'] 
+          attributes: ['id', 'title', 'status', 'kpi_id'] 
         },
         { 
           model: KPI, 
           as: 'kpis',
-          attributes: ['id', 'name', 'current_value', 'target_value', 'unit'] 
+          attributes: ['id', 'name', 'current_value', 'target_value', 'unit', 'weight_in_goal', 'kpi_type'],
+          include: [
+            {
+              model: Task,
+              as: 'tasks',
+              attributes: ['id', 'title', 'status', 'due_date']
+            }
+          ]
         },
         {
           model: User,
@@ -56,8 +64,24 @@ exports.getGoalById = async (req, res) => {
     const { id } = req.params;
     const userId = req.user.id;
     
+    // Verifică dacă goal-ul aparține utilizatorului sau unei echipe din care face parte
+    const userTeams = await TeamMember.findAll({
+      where: { user_id: userId },
+      attributes: ['team_id']
+    });
+    
+    const teamIds = userTeams.map(tm => tm.team_id);
+    
+    const whereClause = {
+      id,
+      [Op.or]: [
+        { created_by: userId },
+        { team_id: { [Op.in]: teamIds } }
+      ]
+    };
+    
     const goal = await Goal.findOne({
-      where: { id, created_by: userId },
+      where: whereClause,
       include: [
         { 
           model: Task, 
@@ -66,7 +90,14 @@ exports.getGoalById = async (req, res) => {
         },
         { 
           model: KPI, 
-          as: 'kpis' 
+          as: 'kpis',
+          include: [
+            {
+              model: Task,
+              as: 'tasks',
+              attributes: ['id', 'title', 'status', 'due_date', 'priority']
+            }
+          ]
         },
         {
           model: User,
@@ -240,5 +271,50 @@ exports.updateGoalProgress = async (req, res) => {
   } catch (error) {
     console.error('Update goal progress error:', error);
     res.status(500).json({ message: 'Failed to update goal progress', error: error.message });
+  }
+};
+
+// Adăugăm o funcție pentru recalcularea automată a progresului
+exports.recalculateGoalProgress = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+    
+    // Obține goal-ul cu toate KPI-urile și task-urile lor
+    const goal = await Goal.findOne({
+      where: { id, created_by: userId },
+      include: [
+        { 
+          model: KPI, 
+          as: 'kpis',
+          include: [
+            {
+              model: Task,
+              as: 'tasks',
+              attributes: ['id', 'title', 'status', 'due_date']
+            }
+          ]
+        }
+      ]
+    });
+    
+    if (!goal) {
+      return res.status(404).json({ message: 'Goal not found' });
+    }
+    
+    // Recalculează progresul bazat pe KPI-uri
+    await updateGoalProgress(goal, goal.kpis);
+    
+    res.status(200).json({ 
+      message: 'Goal progress recalculated successfully',
+      goal: {
+        id: goal.id,
+        progress: goal.progress,
+        status: goal.status
+      }
+    });
+  } catch (error) {
+    console.error('Recalculate goal progress error:', error);
+    res.status(500).json({ message: 'Failed to recalculate goal progress', error: error.message });
   }
 };

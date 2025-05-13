@@ -24,6 +24,26 @@ const KPI = sequelize.define('KPI', {
   unit: {
     type: DataTypes.STRING,
     comment: 'Unit of measurement (e.g., $, %, count)'
+  },
+  weight_in_goal: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 0,
+    comment: 'Weight of this KPI in the goal (percentage)'
+  },
+  kpi_type: {
+    type: DataTypes.ENUM('operational', 'financial'),
+    defaultValue: 'operational',
+    comment: 'Type of KPI'
+  },
+  financial_progress_weight: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 100,
+    comment: 'Weight of financial progress in KPI (percentage)'
+  },
+  tasks_progress_weight: {
+    type: DataTypes.DECIMAL(5, 2),
+    defaultValue: 0,
+    comment: 'Weight of tasks progress in KPI (percentage)'
   }
   // goal_id (FK) va fi adăugat prin asocieri
 }, {

@@ -13,5 +13,6 @@ router.post('/', goalController.createGoal);
 router.put('/:id', goalController.updateGoal);
 router.delete('/:id', goalController.deleteGoal);
 router.patch('/:id/progress', goalController.updateGoalProgress);
+router.patch('/:id/recalculate', goalController.recalculateGoalProgress);
 
 module.exports = router;
