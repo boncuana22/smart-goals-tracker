@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import KPICard from './KPICard';
-import KPIForm from './KPIForm';
+import KPICreationModal from './KPICreationModal';
 import Modal from '../common/Modal';
 import FinancialKPISection from './FinancialKpiSection';
 import './GoalDetail.css';
@@ -14,7 +14,7 @@ const GoalDetail = ({
   onUpdateKPI,
   onKPIsUpdated 
 }) => {
-  const [isKPIModalOpen, setIsKPIModalOpen] = useState(false);
+  const [isKPICreationModalOpen, setIsKPICreationModalOpen] = useState(false);
   const [currentKPI, setCurrentKPI] = useState(null);
 
   const formatDate = (dateString) => {
@@ -45,22 +45,22 @@ const GoalDetail = ({
 
   const handleAddKPI = () => {
     setCurrentKPI(null);
-    setIsKPIModalOpen(true);
+    setIsKPICreationModalOpen(true);
   };
 
   const handleEditKPI = (kpi) => {
     setCurrentKPI(kpi);
-    setIsKPIModalOpen(true);
+    setIsKPICreationModalOpen(true);
   };
 
-  const handleSubmitKPI = async (formData) => {
+  const handleKPICreationSubmit = async (formData) => {
     try {
       if (currentKPI) {
         await onEditKPI(currentKPI.id, formData);
       } else {
         await onAddKPI(formData);
       }
-      setIsKPIModalOpen(false);
+      setIsKPICreationModalOpen(false);
     } catch (error) {
       console.error('Error saving KPI:', error);
     }
@@ -174,11 +174,12 @@ const GoalDetail = ({
         </div>
       )}
 
-      <Modal isOpen={isKPIModalOpen} onClose={() => setIsKPIModalOpen(false)}>
-        <KPIForm 
-          kpi={currentKPI}
-          onSubmit={handleSubmitKPI}
-          onCancel={() => setIsKPIModalOpen(false)}
+      <Modal isOpen={isKPICreationModalOpen} onClose={() => setIsKPICreationModalOpen(false)}>
+        <KPICreationModal 
+          goal={goal}
+          onSubmit={handleKPICreationSubmit}
+          onCancel={() => setIsKPICreationModalOpen(false)}
+          existingKPIs={goal.kpis || []}
         />
       </Modal>
     </div>
