@@ -59,9 +59,16 @@
   }
   
   .financial-data-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+  }
+  
+  .financial-data-card {
+    width: 100%;
   }
   
   .loading {

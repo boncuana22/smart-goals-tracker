@@ -148,3 +148,17 @@
     color: #721c24;
     border: 1px solid #f5c6cb;
   }
+
+.financial-data-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  width: 100%;
+  max-width: 900px; /* or match your chart's max-width */
+  margin: 0 auto;
+}
+
+.financial-data-card {
+  width: 100%;
+  /* keep your card styles here */
+}
