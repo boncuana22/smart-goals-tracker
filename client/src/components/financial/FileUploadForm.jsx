@@ -56,9 +56,9 @@ const FileUploadForm = ({ onSubmit, onCancel }) => {
 
   return (
     <div className="file-upload-container">
-      <h2>Upload Balance Sheet</h2>
+      <h2>Upload Income Statement</h2>
       <div className="upload-instructions">
-        <p>Upload a balance sheet file to analyze key metrics like revenue, margins, and profitability.</p>
+        <p>Upload an income statement file to analyze key metrics like revenue, margins, and profitability.</p>
         <p>Supported formats: Excel (.xls, .xlsx) and CSV (.csv)</p>
       </div>
       {error && <div className="alert alert-danger">{error}</div>}

@@ -3,43 +3,56 @@ top to bottom direction
 skinparam componentStyle rectangle
 skinparam defaultTextAlignment center
 
-' Frontend (sus)
-package "Frontend (React App)" {
+' === FRONTEND ===
+rectangle "Frontend (React App)" {
     [App.jsx]
+    [routes.jsx]
     [Pages]
     [AuthContext.jsx]
-    [routes.jsx]
+    [hooks]
+    [utils]
 
-    package "API Services" {
+    rectangle "API Services" {
         [authService.jsx]
         [goalService.jsx]
         [taskService.jsx]
         [kpiService.jsx]
         [calendarService.jsx]
         [financialService.jsx]
+        [userService.jsx]
+        [teamService.jsx]
+        [axios.jsx]
     }
+
 }
 
-[App.jsx] --> [API Services]
 [App.jsx] --> [routes.jsx]
 [App.jsx] --> [Pages]
 [App.jsx] --> [AuthContext.jsx]
-[API Services] --> [server.js] : API Requests
+[App.jsx] --> [hooks]
+[App.jsx] --> [utils]
+[App.jsx] --> [API Services]
 
-' Backend (jos)
-package "Backend (Express.js Server)" {
+' === ANCORĂ pentru BACKEND ===
+component " " as BackendAnchor
+[API Services] --> BackendAnchor : API Requests
+
+' === BACKEND ===
+rectangle "Backend (Express.js Server)" {
     [server.js]
 
-    package "Routes" {
+    rectangle "Routes" {
         [authRoutes.js]
         [goalRoutes.js]
         [taskRoutes.js]
         [kpiRoutes.js]
         [calendarRoutes.js]
         [financialRoutes.js]
+        [teamRoutes.js]
+        [userRoutes.js]
     }
 
-    package "Controllers" {
+    rectangle "Controllers" {
         [authController.js]
         [goalController.js]
         [taskController.js]
@@ -48,7 +61,7 @@ package "Backend (Express.js Server)" {
         [financialController.js]
     }
 
-    package "Models" {
+    rectangle "Models" {
         [User.js]
         [Goal.js]
         [Task.js]
@@ -56,18 +69,26 @@ package "Backend (Express.js Server)" {
         [CalendarEvent.js]
         [FinancialData.js]
         [FinancialMetric.js]
+        [Team.js]
+        [TeamMember.js]
+        [TeamInvitation.js]
     }
 
-    package "Middleware" {
+    rectangle "Middleware" {
         [authMiddleware.js]
         [uploadMiddleware.js]
     }
+
+    [utils]
+    [uploads]
 }
 
-' Legături verticale clare
+BackendAnchor --> [server.js]
 [server.js] --> [Routes]
 [Routes] --> [Controllers]
 [Controllers] --> [Models]
 [server.js] --> [Middleware]
+[server.js] --> [Utils]
+[uploadMiddleware.js] --> [uploads]
 
 @enduml

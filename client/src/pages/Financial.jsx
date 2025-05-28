@@ -105,7 +105,7 @@ const Financial = () => {
         ) : financialData.length === 0 ? (
           <div className="empty-financial">
             <p>No financial data has been uploaded yet.</p>
-            <p>Upload balance sheets or financial data to analyze key business metrics.</p>
+            <p>Upload financial data to analyze key business metrics.</p>
             <button className="btn btn-primary" onClick={() => setIsUploadModalOpen(true)}>
               Upload Your First Financial Data
             </button>

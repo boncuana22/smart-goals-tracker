@@ -24,6 +24,7 @@
 │   │   │   ├── teamService.jsx
 │   │   │   └── userService.jsx
 │   │   ├── assets
+│   │   │   ├── TrackSMARTLogo.svg
 │   │   │   └── react.svg
 │   │   ├── components
 │   │   │   ├── auth
@@ -54,6 +55,8 @@
 │   │   │   │   ├── GoalForm.jsx
 │   │   │   │   ├── KPICard.css
 │   │   │   │   ├── KPICard.jsx
+│   │   │   │   ├── KPICreationModal.css
+│   │   │   │   ├── KPICreationModal.jsx
 │   │   │   │   ├── KPIForm.css
 │   │   │   │   └── KPIForm.jsx
 │   │   │   └── tasks
@@ -96,8 +99,7 @@
 │   │   └── utils
 │   └── vite.config.js
 ├── docs
-│   ├── architecture.puml
-│   └── structure.txt
+│   └── architecture.puml
 ├── out
 │   └── docs
 │       └── architecture
@@ -142,18 +144,10 @@
 │   │   └── userRoutes.js
 │   ├── server.js
 │   ├── uploads
-│   │   ├── financial-1746880792738-234738241.xlsx
-│   │   ├── financial-1746881246385-666900568.xlsx
-│   │   └── profile-photos
-│   │       ├── user_2_1746984339671.png
-│   │       ├── user_2_1746984372823.jpg
-│   │       ├── user_2_1746984551184.png
-│   │       ├── user_2_1746985273973.jpeg
-│   │       └── user_2_1746985280966.png
 │   └── utils
 │       ├── emailService.js
 │       ├── kpiFinancialUtils.js
 │       └── progressCalculator.js
 └── structure.txt
 
-33 directories, 124 files
+33 directories, 129 files

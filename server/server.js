@@ -58,3 +58,27 @@ sequelize.sync({ alter: process.env.NODE_ENV === 'development' })
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
 });
+
+// TEMPORARY - Password reset for development
+app.post('/api/reset-my-password', async (req, res) => {
+  try {
+    const { User } = require('./models'); 
+    const { email, newPassword } = req.body;
+    
+    const user = await User.findOne({ where: { email } });
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    // Update password - will be hashed automatically by beforeUpdate hook
+    user.password = newPassword;
+    await user.save();
+    
+    res.json({ 
+      message: 'Password reset successfully',
+      user: { email: user.email, username: user.username }
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error resetting password', error: error.message });
+  }
+});

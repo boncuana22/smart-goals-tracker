@@ -32,7 +32,7 @@ const FinancialDataCard = ({ data, onDelete, onViewDetails }) => {
       });
   };
   
-  // Formatare valoare pentru afișare
+ 
   // Formatare valoare pentru afișare
     const formatValue = (value, unit = '') => {
         if (value === null || value === undefined) return 'N/A';
@@ -59,7 +59,7 @@ const FinancialDataCard = ({ data, onDelete, onViewDetails }) => {
     <div className="financial-data-card">
       <div className="financial-card-header">
         <div className="financial-card-title">
-          <h3>{data.data_type}</h3>
+          <h3>Income Statement</h3>
           <span className="financial-date">{formatDate(data.data_period)}</span>
         </div>
         

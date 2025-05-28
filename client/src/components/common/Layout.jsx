@@ -2,9 +2,10 @@ import React, { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import './Layout.css'; 
+import TrackSMARTLogo from '../../assets/TrackSMARTLogo.svg';
 
 const Layout = ({ children }) => {
-  const { user, logout } = useAuth();
+  const { logout } = useAuth();
   const location = useLocation();
   const navigate = useNavigate();
   const [sidebarOpen, setSidebarOpen] = useState(true);
@@ -19,7 +20,7 @@ const Layout = ({ children }) => {
       {/* Sidebar */}
       <div className={`modern-sidebar ${sidebarOpen ? 'open' : 'closed'}`}>
         <div className="sidebar-logo">
-          <span>SMART</span>
+          <img src={TrackSMARTLogo} alt="TrackSMART Logo" style={{ width: '100%', maxWidth: 120 }} />
         </div>
         <nav className="sidebar-nav">
           <ul className="nav-items">
@@ -102,36 +103,7 @@ const Layout = ({ children }) => {
           <button className="sidebar-toggle" onClick={() => setSidebarOpen(!sidebarOpen)}>
             <i className="fas fa-bars"></i>
           </button>
-          <div className="header-search">
-            <input type="text" placeholder="Search..." />
-          </div>
-          <div className="header-actions">
-            <button className="header-icon-btn">
-              <i className="fas fa-bell"></i>
-              <span className="notification-badge">2</span>
-            </button>
-            <Link to="/profile" className="user-avatar">
-              {user?.profilePhoto ? (
-                <img src={user.profilePhoto} alt={user?.username || 'User'} />
-              ) : (
-                <div style={{
-                  width: '100%',
-                  height: '100%',
-                  backgroundColor: 'var(--accent-color)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: 'white',
-                  fontWeight: '600',
-                  fontSize: '1.1rem'
-                }}>
-                  {user?.username?.charAt(0).toUpperCase() || 'U'}
-                </div>
-              )}
-            </Link>
-          </div>
         </header>
-
         <main className="content-area">
           {children}
         </main>
