@@ -20,7 +20,7 @@ const connectKPIsWithFinancialData = async (kpis, userId) => {
       where: { uploaded_by: userId },
       include: [{ model: FinancialMetric, as: 'metrics' }],
       order: [['data_period', 'DESC']],
-      limit: 2 // Get two most recent to calculate changes
+      limit: 1 // Only get the most recent data
     });
     
     if (!financialData || financialData.length === 0) {
@@ -30,19 +30,10 @@ const connectKPIsWithFinancialData = async (kpis, userId) => {
     // Get metrics from most recent financial data
     const currentMetrics = financialData[0]?.metrics || [];
     
-    // Get metrics from previous financial data (if exists)
-    const previousMetrics = financialData.length > 1 ? financialData[1]?.metrics || [] : [];
-    
     // Create a map of current metrics by name for easy lookup
     const metricsMap = {};
     currentMetrics.forEach(metric => {
       metricsMap[metric.metric_name.toLowerCase()] = metric;
-    });
-    
-    // Create a map of previous metrics by name for change calculation
-    const previousMetricsMap = {};
-    previousMetrics.forEach(metric => {
-      previousMetricsMap[metric.metric_name.toLowerCase()] = metric;
     });
     
     // Define mappings between KPI names/descriptions and financial metrics
@@ -58,8 +49,8 @@ const connectKPIsWithFinancialData = async (kpis, userId) => {
     
     // Parse and update KPIs with financial data
     const updatedKpis = await Promise.all(kpis.map(async kpi => {
-      // Skip if KPI is not financial
-      if (!kpi.name || !isFinancialKPI(kpi)) {
+      // Skip if KPI is not financial type
+      if (kpi.kpi_type !== 'financial') {
         return kpi;
       }
       
@@ -76,67 +67,42 @@ const connectKPIsWithFinancialData = async (kpis, userId) => {
         }
       }
       
-      // If we found a matching metric, update the KPI
+      // If we found a matching metric, update ONLY the current value
       if (matchedMetric) {
-        const previousMetric = previousMetricsMap[matchedMetric.metric_name.toLowerCase()];
+        console.log(`Updating KPI "${kpi.name}" current value from ${kpi.current_value} to ${matchedMetric.current_value}`);
         
-        // Get change percentage if previous metric exists
-        const changePercentage = previousMetric 
-          ? ((matchedMetric.current_value - previousMetric.current_value) / previousMetric.current_value) * 100 
-          : null;
-        
-        // If KPI has no target value, set matched metric value as current value
-        if (!kpi.target_value || kpi.target_value === 0) {
-          // Use the KPI's current value or matched metric if not set
-          kpi.current_value = kpi.current_value || matchedMetric.current_value;
-          
-          // Set a default target based on the current value and change percentage
-          if (changePercentage !== null) {
-            // Target is current + a projection based on change (e.g., 10% increase)
-            kpi.target_value = matchedMetric.current_value * (1 + (changePercentage / 100));
-            
-            // For metrics that should decrease (like costs), adjust target
-            if (kpiNameLower.includes('cost') || kpiNameLower.includes('expense')) {
-              // If costs are increasing, set target to reduce them
-              if (changePercentage > 0) {
-                kpi.target_value = matchedMetric.current_value * 0.9; // 10% reduction
-              }
-            }
-          } else {
-            // No change data, set a default target (10% increase or 5% decrease for costs)
-            const growthFactor = kpiNameLower.includes('cost') || kpiNameLower.includes('expense') 
-              ? 0.95 // 5% reduction for costs
-              : 1.1;  // 10% increase for revenue, profit, etc.
-              
-            kpi.target_value = matchedMetric.current_value * growthFactor;
-          }
-        } else {
-          // KPI already has a target, just update current value if not manually set
-          kpi.current_value = kpi.current_value || matchedMetric.current_value;
-        }
+        // ONLY update current value - NEVER touch the target value
+        kpi.current_value = matchedMetric.current_value;
         
         // Save updated KPI to database if it's a database model
         if (kpi.save) {
           try {
             await kpi.save();
+            console.log(`Saved KPI "${kpi.name}" with new current value: ${kpi.current_value}`);
             
             // Update goal progress if this KPI is linked to a goal
             if (kpi.goal_id) {
+              const { updateGoalProgress } = require('./progressCalculator');
               const goal = await Goal.findByPk(kpi.goal_id, {
                 include: [
-                  { model: KPI, as: 'kpis' },
-                  { model: Task, as: 'tasks' }
+                  { 
+                    model: KPI, 
+                    as: 'kpis',
+                    include: [{ model: Task, as: 'tasks' }]
+                  }
                 ]
               });
               
               if (goal) {
-                await updateGoalProgress(goal, goal.tasks, goal.kpis);
+                await updateGoalProgress(goal, goal.kpis);
               }
             }
           } catch (error) {
             console.error('Error saving KPI with financial data:', error);
           }
         }
+      } else {
+        console.log(`No matching financial metric found for KPI "${kpi.name}"`);
       }
       
       return kpi;
@@ -155,6 +121,12 @@ const connectKPIsWithFinancialData = async (kpis, userId) => {
  * @returns {Boolean} - True if KPI appears to be financial
  */
 const isFinancialKPI = (kpi) => {
+  // Use the explicit kpi_type field if available
+  if (kpi.kpi_type) {
+    return kpi.kpi_type === 'financial';
+  }
+  
+  // Fallback to keyword detection for legacy KPIs
   const financialKeywords = [
     'revenue', 'sales', 'profit', 'margin', 'cost', 'expense', 
     'income', 'earnings', 'financial', 'price', 'roi', 'return', 
@@ -177,8 +149,9 @@ const isFinancialKPI = (kpi) => {
  */
 const syncFinancialKPIs = async (userId) => {
   try {
-    // Get all KPIs for goals created by the user
+    // Get all financial KPIs for goals created by the user
     const kpis = await KPI.findAll({
+      where: { kpi_type: 'financial' }, // Only get financial KPIs
       include: [{ 
         model: Goal,
         where: { created_by: userId },
@@ -186,13 +159,15 @@ const syncFinancialKPIs = async (userId) => {
       }]
     });
     
+    console.log(`Found ${kpis.length} financial KPIs to sync for user ${userId}`);
+    
     // Update KPIs with financial data
     const updatedKpis = await connectKPIsWithFinancialData(kpis, userId);
     
     return {
       success: true,
       kpisUpdated: updatedKpis.length,
-      message: `Successfully synchronized ${updatedKpis.length} KPIs with financial data`
+      message: `Successfully synchronized ${updatedKpis.length} financial KPIs with latest financial data`
     };
   } catch (error) {
     console.error('Error syncing financial KPIs:', error);

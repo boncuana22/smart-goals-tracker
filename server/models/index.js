@@ -16,6 +16,10 @@ const TeamInvitation = require('./TeamInvitation');
 User.hasMany(Task, { foreignKey: 'user_id', as: 'tasks' });
 Task.belongsTo(User, { foreignKey: 'user_id' });
 
+// Relații User - Task (assigned to)
+User.hasMany(Task, { foreignKey: 'assigned_to', as: 'assignedTasks' });
+Task.belongsTo(User, { foreignKey: 'assigned_to', as: 'assignedUser' });
+
 // Relații User - Goal (created by)
 User.hasMany(Goal, { foreignKey: 'created_by', as: 'goals' });
 Goal.belongsTo(User, { foreignKey: 'created_by' });

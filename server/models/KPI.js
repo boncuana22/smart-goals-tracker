@@ -15,7 +15,9 @@ const KPI = sequelize.define('KPI', {
     type: DataTypes.TEXT
   },
   target_value: {
-    type: DataTypes.DECIMAL(15, 2)
+    type: DataTypes.DECIMAL(15, 2),
+    allowNull: true,
+    defaultValue: null
   },
   current_value: {
     type: DataTypes.DECIMAL(15, 2),
@@ -44,8 +46,17 @@ const KPI = sequelize.define('KPI', {
     type: DataTypes.DECIMAL(5, 2),
     defaultValue: 0,
     comment: 'Weight of tasks progress in KPI (percentage)'
+  },
+  goal_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    references: {
+      model: 'Goals',
+      key: 'id'
+    },
+    onUpdate: 'CASCADE',
+    onDelete: 'CASCADE'
   }
-  // goal_id (FK) va fi adăugat prin asocieri
 }, {
   timestamps: true
 });

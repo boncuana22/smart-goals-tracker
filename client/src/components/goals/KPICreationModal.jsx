@@ -39,7 +39,16 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
         if (!kpiData.name.trim()) {
           newErrors.name = 'KPI name is required';
         }
+        
+        // For financial KPIs, require target value and unit
         if (kpiData.type === 'financial') {
+          if (!kpiData.target_value || kpiData.target_value <= 0) {
+            newErrors.target_value = 'Target value is required for financial KPIs';
+          }
+          if (!kpiData.unit) {
+            newErrors.unit = 'Unit is required for financial KPIs';
+          }
+          
           const finWeight = parseFloat(kpiData.financial_progress_weight);
           const taskWeight = parseFloat(kpiData.tasks_progress_weight);
           if (Math.abs((finWeight + taskWeight) - 100) > 0.01) {
@@ -192,7 +201,9 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
         <>
           <div className="form-row">
             <div className="form-group">
-              <label htmlFor="target-value">Target Value</label>
+              <label htmlFor="target-value">
+                Target Value {kpiData.type === 'financial' && <span className="required">*</span>}
+              </label>
               <input
                 type="number"
                 id="target-value"
@@ -201,27 +212,34 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
                 placeholder="15"
                 className="form-control"
                 step="0.01"
+                required={kpiData.type === 'financial'}
               />
+              {errors.target_value && <div className="error-message">{errors.target_value}</div>}
             </div>
             <div className="form-group">
-              <label htmlFor="unit">Unit</label>
+              <label htmlFor="unit">
+                Unit {kpiData.type === 'financial' && <span className="required">*</span>}
+              </label>
               <select
                 id="unit"
                 value={kpiData.unit}
                 onChange={(e) => handleInputChange('unit', e.target.value)}
                 className="form-control"
+                required={kpiData.type === 'financial'}
               >
+                <option value="">Select unit...</option>
                 <option value="%">% (Percentage)</option>
                 <option value="RON">RON</option>
                 <option value="EUR">EUR</option>
                 <option value="USD">USD</option>
                 <option value="">No unit</option>
               </select>
+              {errors.unit && <div className="error-message">{errors.unit}</div>}
             </div>
           </div>
           
           <div className="progress-source-section">
-            <h4>📊 Progress Source:</h4>
+            <h4>Progress Source:</h4>
             <div className="form-group">
               <label>How should progress be calculated?</label>
               <div className="progress-weight-inputs">
@@ -266,7 +284,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
           </div>
           
           <div className="kpi-explanation">
-            <h4>💡 How it works:</h4>
+            <h4>How it works:</h4>
             <ul>
               <li>Progress automatically updates from latest financial data upload</li>
               <li>You can add support tasks to help achieve this KPI</li>
@@ -331,7 +349,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
       </div>
       
       <div className="weight-tips">
-        <h4>💡 Tips:</h4>
+        <h4>Tips:</h4>
         <ul>
           <li>Higher percentage = more important for goal success</li>
           <li>All KPI weights should ideally add up to 100%</li>
@@ -350,7 +368,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
       
       <div className="kpi-review">
         <div className="review-header">
-          <h4>✅ {kpiData.name}</h4>
+          <h4>{kpiData.name}</h4>
           <span className="kpi-type-badge">{kpiData.type}</span>
         </div>
         
@@ -382,7 +400,7 @@ const KPICreationModal = ({ goal, onSubmit, onCancel, existingKPIs = [] }) => {
         </div>
         
         <div className="how-it-works">
-          <h4>📊 How it works:</h4>
+          <h4>How it works:</h4>
           {kpiData.type === 'operational' ? (
             <ul>
               <li>Track progress through task completion</li>

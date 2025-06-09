@@ -18,7 +18,11 @@ exports.getAllKPIs = async (req, res) => {
           as: 'tasks',
           attributes: ['id', 'title', 'status', 'due_date', 'priority'],
           include: [
-            { model: User, attributes: ['id', 'username'] }
+            { 
+              model: User, 
+              as: 'assignedUser',  
+              attributes: ['id', 'username'] 
+            }
           ]
         }
       ],
@@ -51,7 +55,11 @@ exports.getKPIById = async (req, res) => {
           as: 'tasks',
           attributes: ['id', 'title', 'status', 'due_date', 'priority'],
           include: [
-            { model: User, attributes: ['id', 'username'] }
+            { 
+              model: User, 
+              as: 'assignedUser', 
+              attributes: ['id', 'username'] 
+            }
           ]
         }
       ]
@@ -128,10 +136,10 @@ exports.createKPI = async (req, res) => {
     
     const kpi = await KPI.create({
       name,
-      description,
-      target_value,
-      current_value: current_value || 0,
-      unit,
+      description: description || null,
+      target_value: target_value && target_value !== '' ? target_value : null,
+      current_value: current_value && current_value !== '' ? current_value : 0,
+      unit: unit || null,
       goal_id,
       weight_in_goal: weight_in_goal || 0,
       kpi_type: kpi_type || 'operational',
@@ -248,10 +256,10 @@ exports.updateKPI = async (req, res) => {
     
     await kpi.update({
       name,
-      description,
-      target_value,
-      current_value,
-      unit,
+      description: description || null,
+      target_value: target_value && target_value !== '' ? target_value : null,
+      current_value: current_value && current_value !== '' ? current_value : kpi.current_value,
+      unit: unit || null,
       goal_id: goal_id || kpi.goal_id,
       weight_in_goal: weight_in_goal !== undefined ? weight_in_goal : kpi.weight_in_goal,
       kpi_type: kpi_type || kpi.kpi_type,

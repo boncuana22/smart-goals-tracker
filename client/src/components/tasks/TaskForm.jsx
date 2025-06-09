@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './TaskForm.css';
+import goalService from '../../api/goalService';
 
 const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
   const [formData, setFormData] = useState({
@@ -8,8 +9,12 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
     status: 'To Do',
     priority: 'Medium',
     due_date: '',
-    goal_id: ''
+    goal_id: '',
+    kpi_id: ''
   });
+
+  const [availableKPIs, setAvailableKPIs] = useState([]);
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (task) {
@@ -26,19 +31,61 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
         status: task.status || 'To Do',
         priority: task.priority || 'Medium',
         due_date: formattedDate,
-        goal_id: task.goal_id || ''
+        goal_id: task.goal_id || '',
+        kpi_id: task.kpi_id || ''
       });
+
+      // If editing a task with a goal, load that goal's KPIs
+      if (task.goal_id) {
+        loadGoalKPIs(task.goal_id);
+      }
     }
   }, [task]);
 
+  const loadGoalKPIs = async (goalId) => {
+    if (!goalId) {
+      setAvailableKPIs([]);
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await goalService.getGoalById(goalId);
+      if (response.goal) {
+        // Filter for operational KPIs only (financial KPIs don't need tasks)
+        const operationalKPIs = (response.goal.kpis || []).filter(kpi => kpi.kpi_type === 'operational');
+        setAvailableKPIs(operationalKPIs);
+      }
+    } catch (error) {
+      console.error('Error loading goal KPIs:', error);
+      setAvailableKPIs([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
+    
+    if (name === 'goal_id') {
+      setFormData({ ...formData, goal_id: value, kpi_id: '' }); // Reset KPI when goal changes
+      loadGoalKPIs(value);
+    } else {
+      setFormData({ ...formData, [name]: value });
+    }
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    onSubmit(formData);
+    
+    const cleanedFormData = {
+      ...formData,
+      kpi_id: formData.kpi_id && formData.kpi_id.trim() !== '' ? formData.kpi_id : null,
+      description: formData.description && formData.description.trim() !== '' ? formData.description : null,
+      due_date: formData.due_date && formData.due_date.trim() !== '' ? formData.due_date : null
+    };
+    
+    onSubmit(cleanedFormData);
   };
 
   return (
@@ -102,19 +149,24 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
           </div>
         </div>
 
-        <div className="form-row">
-          <div className="form-group">
-            <label htmlFor="due_date">Due Date</label>
-            <input
-              type="date"
-              id="due_date"
-              name="due_date"
-              value={formData.due_date}
-              onChange={handleChange}
-              className="form-control"
-            />
-          </div>
+        <div className="form-group">
+          <label htmlFor="due_date">Due Date</label>
+          <input
+            type="date"
+            id="due_date"
+            name="due_date"
+            value={formData.due_date}
+            onChange={handleChange}
+            className="form-control"
+          />
+        </div>
 
+        <div className="form-section">
+          <h3>Assignment</h3>
+          <p className="form-helper">
+            Choose how this task contributes to your goals. Tasks assigned to operational KPIs will automatically update the KPI's progress.
+          </p>
+          
           <div className="form-group">
             <label htmlFor="goal_id">Related Goal</label>
             <select
@@ -123,8 +175,9 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
               value={formData.goal_id}
               onChange={handleChange}
               className="form-control"
+              required
             >
-              <option value="">None</option>
+              <option value="">Select a goal...</option>
               {goals && goals.map(goal => (
                 <option key={goal.id} value={goal.id}>
                   {goal.title}
@@ -132,6 +185,42 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
               ))}
             </select>
           </div>
+
+          {formData.goal_id && (
+            <div className="form-group">
+              <label htmlFor="kpi_id">Specific KPI (Optional)</label>
+              <select
+                id="kpi_id"
+                name="kpi_id"
+                value={formData.kpi_id}
+                onChange={handleChange}
+                className="form-control"
+                disabled={loading}
+              >
+                <option value="">General goal task</option>
+                {availableKPIs.map(kpi => (
+                  <option key={kpi.id} value={kpi.id}>
+                    📊 {kpi.name}
+                  </option>
+                ))}
+              </select>
+              
+              {loading && <div className="form-helper">Loading KPIs...</div>}
+              
+              {!loading && availableKPIs.length === 0 && formData.goal_id && (
+                <div className="form-helper">
+                  This goal has no operational KPIs. The task will be assigned to the goal directly.
+                </div>
+              )}
+              
+              {availableKPIs.length > 0 && (
+                <div className="form-helper">
+                  💡 <strong>Tip:</strong> Assign to a specific KPI if this task directly contributes to that measurement. 
+                  Leave as "General goal task" if it supports the goal broadly.
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="form-actions">

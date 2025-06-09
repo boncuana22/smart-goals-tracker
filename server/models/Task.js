@@ -29,8 +29,22 @@ const Task = sequelize.define('Task', {
     type: DataTypes.INTEGER,
     allowNull: true,
     comment: 'KPI asociat cu acest task (pentru KPI-uri operaționale)'
+  },
+  user_id: {
+    type: DataTypes.INTEGER,
+    allowNull: false,
+    comment: 'User who owns/is assigned this task'
+  },
+  assigned_to: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'User assigned to this task'
+  },
+  goal_id: {
+    type: DataTypes.INTEGER,
+    allowNull: true,
+    comment: 'Goal this task is associated with (optional)'
   }
-  // user_id și goal_id vor fi adăugate prin asocieri
 }, {
   timestamps: true
 });
