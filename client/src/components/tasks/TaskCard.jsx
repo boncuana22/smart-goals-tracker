@@ -1,5 +1,6 @@
 import React from 'react';
 import './TaskCard.css';
+import { Warning, CalendarToday, Edit, Delete } from '@mui/icons-material';
 
 const priorityColors = {
   'Low': '#4caf50',    // Green
@@ -56,7 +57,11 @@ const TaskCard = ({ task, onEdit, onDelete, onDragStart }) => {
       
       <div className="task-footer">
         <div className="task-due-date">
-          {isOverdue() ? '⚠️ ' : '📅 '}
+          {isOverdue() ? (
+            <Warning sx={{ fontSize: 16, color: '#f44336', marginRight: '4px', verticalAlign: 'middle' }} />
+          ) : (
+            <CalendarToday sx={{ fontSize: 16, color: '#666', marginRight: '4px', verticalAlign: 'middle' }} />
+          )}
           {formatDate(task.due_date)}
         </div>
         
@@ -66,14 +71,14 @@ const TaskCard = ({ task, onEdit, onDelete, onDragStart }) => {
             onClick={() => onEdit(task)}
             title="Edit Task"
           >
-            ✏️
+            <Edit sx={{ fontSize: 16 }} />
           </button>
           <button 
             className="delete-btn"
             onClick={() => onDelete(task.id)}
             title="Delete Task"
           >
-            🗑️
+            <Delete sx={{ fontSize: 16 }} />
           </button>
         </div>
       </div>

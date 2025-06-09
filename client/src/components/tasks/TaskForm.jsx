@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import './TaskForm.css';
 import goalService from '../../api/goalService';
+import { BarChart, Lightbulb } from '@mui/icons-material';
 
 const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
   const [formData, setFormData] = useState({
@@ -200,7 +201,7 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
                 <option value="">General goal task</option>
                 {availableKPIs.map(kpi => (
                   <option key={kpi.id} value={kpi.id}>
-                    📊 {kpi.name}
+                    KPI: {kpi.name}
                   </option>
                 ))}
               </select>
@@ -215,7 +216,8 @@ const TaskForm = ({ task, onSubmit, onCancel, goals }) => {
               
               {availableKPIs.length > 0 && (
                 <div className="form-helper">
-                  💡 <strong>Tip:</strong> Assign to a specific KPI if this task directly contributes to that measurement. 
+                  <Lightbulb sx={{ fontSize: 16, verticalAlign: 'middle', marginRight: '4px' }} /> 
+                  <strong>Tip:</strong> Assign to a specific KPI if this task directly contributes to that measurement. 
                   Leave as "General goal task" if it supports the goal broadly.
                 </div>
               )}
