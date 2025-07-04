@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import KPICard from './KPICard';
 import KPICreationModal from './KPICreationModal';
 import Modal from '../common/Modal';
-import FinancialKPISection from './FinancialKpiSection';
 import './GoalDetail.css';
 
 const GoalDetail = ({ 
@@ -11,8 +10,7 @@ const GoalDetail = ({
   onAddKPI, 
   onEditKPI, 
   onDeleteKPI, 
-  onUpdateKPI,
-  onKPIsUpdated 
+  onUpdateKPI
 }) => {
   const [isKPICreationModalOpen, setIsKPICreationModalOpen] = useState(false);
   const [currentKPI, setCurrentKPI] = useState(null);
@@ -81,15 +79,28 @@ const GoalDetail = ({
 
       <div className="goal-progress-section">
         <h3>Progress</h3>
-        <div className="goal-progress-container">
-          <div className="goal-progress-bar">
-            <div 
-              className="goal-progress-fill" 
-              style={{ width: `${goal.progress || 0}%` }}
-            ></div>
-          </div>
-          <span className="goal-progress-value">{goal.progress || 0}%</span>
-        </div>
+        {relatedTasks && relatedTasks.length > 0 ? (() => {
+          const completed = relatedTasks.filter(task => task.status === "Completed").length;
+          const percent = Math.round((completed / relatedTasks.length) * 100);
+          return (
+            <>
+              <div className="goal-progress-bar">
+                <div 
+                  className="goal-progress-fill" 
+                  style={{ width: `${percent}%` }}
+                ></div>
+              </div>
+              <span className="goal-progress-value">{percent}%</span>
+            </>
+          );
+        })() : (
+          <>
+            <div className="goal-progress-bar">
+              <div className="goal-progress-fill" style={{ width: `0%` }}></div>
+            </div>
+            <span className="goal-progress-value">0%</span>
+          </>
+        )}
         {goal.time_bound_date && (
           <p className="goal-deadline">
             Deadline: {formatDate(goal.time_bound_date)}
@@ -156,14 +167,6 @@ const GoalDetail = ({
           </div>
         )}
       </div>
-
-      {/* Financial KPIs Section */}
-      <FinancialKPISection 
-        kpis={goal.kpis || []}
-        goalId={goal.id}
-        onAddKPI={onAddKPI}
-        onKPIsUpdated={onKPIsUpdated}
-      />
 
       {relatedTasks && relatedTasks.length > 0 && (
         <div className="goal-tasks-section">

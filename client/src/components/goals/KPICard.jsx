@@ -11,10 +11,10 @@ const KPICard = ({ kpi, onEdit, onDelete, onUpdateValue }) => {
 
   const progressPercent = calculateProgress();
 
-  const handleValueChange = (e) => {
+  const handleTargetValueChange = (e) => {
     const newValue = parseFloat(e.target.value);
     if (!isNaN(newValue)) {
-      onUpdateValue(kpi.id, newValue);
+      onUpdateValue(kpi.id, { target_value: newValue });
     }
   };
 
@@ -72,21 +72,20 @@ const KPICard = ({ kpi, onEdit, onDelete, onUpdateValue }) => {
           <div className="kpi-current">
             <label>Current</label>
             <div className="value-input-wrapper">
-              <input 
-                type="number" 
-                value={kpi.current_value || 0} 
-                onChange={handleValueChange}
-                className="current-value-input"
-                step="0.01"
-              />
-              {kpi.unit && <span className="unit">{kpi.unit}</span>}
+              <span className="current-value-display">{kpi.current_value ?? 0}{kpi.unit && <span className="unit"> {kpi.unit}</span>}</span>
             </div>
           </div>
           
           <div className="kpi-target">
             <label>Target</label>
-            <div className="target-value">
-              {kpi.target_value || 0}
+            <div className="value-input-wrapper">
+              <input 
+                type="number" 
+                value={kpi.target_value || 0} 
+                onChange={handleTargetValueChange}
+                className="target-value-input"
+                step="0.01"
+              />
               {kpi.unit && <span className="unit">{kpi.unit}</span>}
             </div>
           </div>

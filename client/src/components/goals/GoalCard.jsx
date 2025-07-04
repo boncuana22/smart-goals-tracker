@@ -1,10 +1,15 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './GoalCard.css';
+import { CalendarToday, Edit, Delete, Visibility } from '@mui/icons-material';
 
 const GoalCard = ({ goal, onEdit, onDelete }) => {
   // Calculare procent pentru progress bar
-  const progressPercent = goal.progress || 0;
+  let progressPercent = 0;
+  if (goal.tasks && goal.tasks.length > 0) {
+    const completed = goal.tasks.filter(task => task.status === "Completed").length;
+    progressPercent = Math.round((completed / goal.tasks.length) * 100);
+  }
   
   // Format date pentru afișare
   const formatDate = (dateString) => {
@@ -69,7 +74,8 @@ const GoalCard = ({ goal, onEdit, onDelete }) => {
       
       <div className="goal-footer">
         <div className="goal-deadline">
-          🗓️ Deadline: {formatDate(goal.time_bound_date)}
+          <CalendarToday sx={{ fontSize: 16, color: '#666', marginRight: '4px', verticalAlign: 'middle' }} />
+          {formatDate(goal.time_bound_date)}
         </div>
         
         <div className="goal-actions">
@@ -78,21 +84,21 @@ const GoalCard = ({ goal, onEdit, onDelete }) => {
             onClick={() => window.location.href = `/goals/${goal.id}`}
             title="View Details"
           >
-            👁️
+            <Visibility sx={{ fontSize: 16 }} />
           </button>
           <button 
             className="action-btn edit-btn" 
             onClick={() => onEdit(goal)}
             title="Edit Goal"
           >
-            ✏️
+            <Edit sx={{ fontSize: 16 }} />
           </button>
           <button 
             className="action-btn delete-btn" 
             onClick={() => onDelete(goal.id)}
             title="Delete Goal"
           >
-            🗑️
+            <Delete sx={{ fontSize: 16 }} />
           </button>
         </div>
       </div>
