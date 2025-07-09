@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { FinancialData, FinancialMetric } = require('../models');
+const { FinancialData, FinancialMetric, KPI } = require('../models');
 const XLSX = require('xlsx');
 
 // Încărcare și procesare fișier financiar
@@ -468,6 +468,29 @@ async function processBalanceSheet(data, financialDataId, reportingPeriodType = 
     
     console.log(`Salvate ${metrics.length} metrici în baza de date.`);
     
+    // --- Actualizează KPIs financiari dacă target_value este atins ---
+    try {
+      // Găsește toate KPIs financiari cu target_value definit
+      const financialKpis = await KPI.findAll({
+        where: {
+          kpi_type: 'financial',
+          target_value: { $ne: null }
+        }
+      });
+      for (const kpi of financialKpis) {
+        // Dacă există un metric cu același nume ca KPI-ul și current_value >= target_value
+        const matchingMetric = metrics.find(m => m.metric_name === kpi.name);
+        if (matchingMetric && matchingMetric.current_value >= kpi.target_value) {
+          if (!kpi.is_achieved) {
+            kpi.is_achieved = true;
+            await kpi.save();
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Eroare la actualizarea KPIs financiari:', err);
+    }
+    
   } catch (error) {
     console.error('Error saving financial metrics:', error);
     throw error;
@@ -548,9 +571,43 @@ exports.deleteFinancialData = async (req, res) => {
   }
 };
 
+// Endpoint: GET /financial/metrics
+exports.getAllFinancialMetrics = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    // Get all financial data uploaded by the user, including metrics
+    const financialData = await FinancialData.findAll({
+      where: { uploaded_by: userId },
+      include: [{ model: FinancialMetric, as: 'metrics' }],
+      order: [['data_period', 'DESC']]
+    });
+    // Flatten all metrics into a single array, most recent first
+    const allMetrics = [];
+    for (const data of financialData) {
+      if (data.metrics && Array.isArray(data.metrics)) {
+        for (const metric of data.metrics) {
+          allMetrics.push({
+            id: metric.id,
+            name: metric.metric_name,
+            value: metric.current_value,
+            unit: metric.unit,
+            financial_data_id: data.id,
+            period: data.period_display
+          });
+        }
+      }
+    }
+    res.status(200).json({ metrics: allMetrics });
+  } catch (error) {
+    console.error('Get all financial metrics error:', error);
+    res.status(500).json({ message: 'Failed to get financial metrics', error: error.message });
+  }
+};
+
 module.exports = {
   uploadFinancialData: exports.uploadFinancialData,
   getAllFinancialData: exports.getAllFinancialData,
   getFinancialDataById: exports.getFinancialDataById,
-  deleteFinancialData: exports.deleteFinancialData
+  deleteFinancialData: exports.deleteFinancialData,
+  getAllFinancialMetrics: exports.getAllFinancialMetrics
 };

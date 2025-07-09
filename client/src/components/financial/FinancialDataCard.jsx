@@ -69,14 +69,14 @@ const FinancialDataCard = ({ data, onDelete, onViewDetails }) => {
             onClick={() => onViewDetails(data.id)}
             title="View Details"
           >
-            👁️
+            <i className="fas fa-eye"></i>
           </button>
           <button 
             className="card-action-btn delete-btn" 
             onClick={() => onDelete(data.id)}
             title="Delete"
           >
-            🗑️
+            <i className="fas fa-trash"></i>
           </button>
         </div>
       </div>

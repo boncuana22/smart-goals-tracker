@@ -372,24 +372,12 @@ const TeamDetails = () => {
                   <div key={goal.id} className="goal-card">
                     <div className="goal-header">
                       <h3>{goal.title}</h3>
-                      <span className={`goal-status status-${goal.status.toLowerCase().replace(' ', '-')}`}>
-                        {goal.status}
-                      </span>
                     </div>
                     
                     {goal.description && (
                       <p className="goal-description">{goal.description}</p>
                     )}
                     
-                    <div className="goal-progress">
-                      <div className="progress-bar">
-                        <div 
-                          className="progress-fill"
-                          style={{ width: `${goal.progress || 0}%` }}
-                        ></div>
-                      </div>
-                      <span className="progress-value">{goal.progress || 0}%</span>
-                    </div>
                     
                     <div className="goal-stats">
                       <div className="stat-item">

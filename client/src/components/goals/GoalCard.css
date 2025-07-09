@@ -27,33 +27,6 @@
     flex: 1;
   }
   
-  .goal-status {
-    font-size: 0.8rem;
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: 500;
-    margin-left: 10px;
-  }
-  
-  .status-not-started {
-    background-color: #f2f2f2;
-    color: #666;
-  }
-  
-  .status-in-progress {
-    background-color: #cce5ff;
-    color: #004085;
-  }
-  
-  .status-completed {
-    background-color: #d4edda;
-    color: #155724;
-  }
-  
-  .status-on-hold {
-    background-color: #fff3cd;
-    color: #856404;
-  }
   
   .goal-description {
     color: #666;
@@ -72,15 +45,17 @@
   
   .goal-progress-bar {
     height: 8px;
-    background-color: #e9ecef;
-    border-radius: 4px;
+    background-color: var(--tertiary-bg);
+    border-radius: var(--radius-sm);
     overflow: hidden;
+    box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
   }
   
   .goal-progress-fill {
     height: 100%;
-    background-color: #007bff;
-    border-radius: 4px;
+    background: var(--accent-gradient);
+    border-radius: var(--radius-sm);
+    transition: width 0.3s ease;
   }
   
   .goal-progress-text {

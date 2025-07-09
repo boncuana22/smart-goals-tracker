@@ -27,6 +27,12 @@ const financialService = {
   deleteFinancialData: async (id) => {
     const response = await api.delete(`/financial/${id}`);
     return response.data;
+  },
+
+  // Get all available financial metrics for the user
+  getAllFinancialMetrics: async () => {
+    const response = await api.get('/financial/metrics');
+    return response.data;
   }
 };
 

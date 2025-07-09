@@ -5,6 +5,7 @@ import taskService from '../api/taskService';
 import goalService from '../api/goalService';
 import financialService from '../api/financialService';
 import './Dashboard.css';
+import { calculateGoalProgress } from '../utils/progressUtils';
 
 const Dashboard = () => {
   const navigate = useNavigate();
@@ -56,13 +57,49 @@ const Dashboard = () => {
         todo: tasks.filter(task => task.status === 'To Do').length
       };
       
+      // Calculare metrici pentru obiective bazate pe progres real
       const goalSummary = {
         total: goals.length,
-        completed: goals.filter(goal => goal.status === 'Completed').length,
-        inProgress: goals.filter(goal => goal.status === 'In Progress').length,
-        notStarted: goals.filter(goal => goal.status === 'Not Started').length,
-        onHold: goals.filter(goal => goal.status === 'On Hold').length
+        onTrack: 0,
+        needsAttention: 0,
+        completed: 0,
+        overdue: 0
       };
+      
+      goals.forEach(goal => {
+        // Calculează progresul real al obiectivului
+        let actualProgress = 0;
+        
+        // Dacă obiectivul are KPIs, calculează progresul din KPIs
+        if (goal.kpis && goal.kpis.length > 0) {
+          const kpiProgress = goal.kpis.reduce((sum, kpi) => {
+            if (kpi.target_value && kpi.target_value > 0) {
+              return sum + (kpi.current_value / kpi.target_value) * (kpi.weight_in_goal || 1);
+            }
+            return sum;
+          }, 0);
+          actualProgress = kpiProgress / goal.kpis.length;
+        }
+        // Altfel, dacă obiectivul are task-uri, calculează din task-uri
+        else if (goal.tasks && goal.tasks.length > 0) {
+          const completedTasks = goal.tasks.filter(task => task.status === 'Completed').length;
+          actualProgress = completedTasks / goal.tasks.length;
+        }
+        
+        // Verifică dacă obiectivul este overdue
+        const isOverdue = goal.time_bound_date && new Date(goal.time_bound_date) < new Date() && actualProgress < 1;
+        
+        // Categorizează obiectivul bazat pe progresul real și deadline
+        if (actualProgress >= 1) {
+          goalSummary.completed++;
+        } else if (isOverdue) {
+          goalSummary.overdue++;
+        } else if (actualProgress >= 0.5) {
+          goalSummary.onTrack++;
+        } else {
+          goalSummary.needsAttention++;
+        }
+      });
       
       // Obține cele mai recente 3 încărcări financiare
       const recentUploads = financialRecords
@@ -74,7 +111,10 @@ const Dashboard = () => {
       
       setDashboardData({
         tasks: taskSummary,
-        goals: goalSummary,
+        goals: {
+          ...goalSummary,
+          goals: goals // Include the actual goals array
+        },
         financial: {
           recentUploads,
           keyMetrics
@@ -231,7 +271,7 @@ const Dashboard = () => {
           {/* Goal Summary */}
           <div className="dashboard-card goal-summary">
             <div className="card-header">
-              <h3>Goal Summary</h3>
+              <h3>Goals Overview</h3>
               <button 
                 className="btn-link"
                 onClick={() => navigate('/goals')}
@@ -239,24 +279,7 @@ const Dashboard = () => {
                 View All
               </button>
             </div>
-            <div className="goal-stats">
-              <div className="stat-item">
-                <div className="stat-value">{dashboardData.goals.total}</div>
-                <div className="stat-label">Total</div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-value">{dashboardData.goals.completed}</div>
-                <div className="stat-label">Completed</div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-value">{dashboardData.goals.inProgress}</div>
-                <div className="stat-label">In Progress</div>
-              </div>
-              <div className="stat-item">
-                <div className="stat-value">{dashboardData.goals.notStarted}</div>
-                <div className="stat-label">Not Started</div>
-              </div>
-            </div>
+            
             {dashboardData.goals.total === 0 ? (
               <div className="empty-message">
                 <p>No SMART goals created yet.</p>
@@ -268,47 +291,33 @@ const Dashboard = () => {
                 </button>
               </div>
             ) : (
-              <div className="goal-completion">
-                <div className="completion-chart">
-                  <div className="chart-segment completed" style={{ 
-                    width: `${dashboardData.goals.total > 0 
-                      ? (dashboardData.goals.completed / dashboardData.goals.total) * 100 
-                      : 0}%` 
-                  }}></div>
-                  <div className="chart-segment in-progress" style={{ 
-                    width: `${dashboardData.goals.total > 0 
-                      ? (dashboardData.goals.inProgress / dashboardData.goals.total) * 100 
-                      : 0}%` 
-                  }}></div>
-                  <div className="chart-segment not-started" style={{ 
-                    width: `${dashboardData.goals.total > 0 
-                      ? (dashboardData.goals.notStarted / dashboardData.goals.total) * 100 
-                      : 0}%` 
-                  }}></div>
-                  <div className="chart-segment on-hold" style={{ 
-                    width: `${dashboardData.goals.total > 0 
-                      ? (dashboardData.goals.onHold / dashboardData.goals.total) * 100 
-                      : 0}%` 
-                  }}></div>
-                </div>
-                <div className="chart-legend">
-                  <div className="legend-item">
-                    <div className="legend-color completed"></div>
-                    <div className="legend-label">Completed</div>
+              <div className="goals-list">
+                {(dashboardData.goals.goals || []).slice(0, 5).map(goal => {
+                  const progressPercent = calculateGoalProgress(goal);
+                  
+                  return (
+                    <div key={goal.id} className="goal-item">
+                    <div className="goal-title">{goal.title}</div>
+                    <div className="goal-progress-bar">
+                      <div 
+                        className="goal-progress-fill"
+                        style={{ width: `${progressPercent}%` }}
+                      ></div>
+                    </div>
+                    <div className="goal-progress-text">{progressPercent}%</div>
                   </div>
-                  <div className="legend-item">
-                    <div className="legend-color in-progress"></div>
-                    <div className="legend-label">In Progress</div>
+                  );
+                })}
+                {(dashboardData.goals.goals || []).length > 5 && (
+                  <div className="more-goals">
+                    <button 
+                      className="btn-link"
+                      onClick={() => navigate('/goals')}
+                    >
+                      View {(dashboardData.goals.goals || []).length - 5} more goals...
+                    </button>
                   </div>
-                  <div className="legend-item">
-                    <div className="legend-color not-started"></div>
-                    <div className="legend-label">Not Started</div>
-                  </div>
-                  <div className="legend-item">
-                    <div className="legend-color on-hold"></div>
-                    <div className="legend-label">On Hold</div>
-                  </div>
-                </div>
+                )}
               </div>
             )}
           </div>
@@ -337,9 +346,9 @@ const Dashboard = () => {
               </div>
             ) : (
               <>
-                <div className="key-metrics">
+                <div className="key-metrics metric-list">
                   {dashboardData.financial.keyMetrics.map((metric, index) => (
-                    <div key={index} className="metric-card">
+                    <div key={index} className="metric-list-item">
                       <div className="metric-header">
                         <div className="metric-name">{metric.metric_name}</div>
                         <div className="metric-period">{formatDate(metric.data_period)}</div>

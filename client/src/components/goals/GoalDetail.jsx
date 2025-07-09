@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
 import KPICard from './KPICard';
+import Modal from '../common/Modal'; 
 import KPICreationModal from './KPICreationModal';
-import Modal from '../common/Modal';
 import './GoalDetail.css';
+import { calculateGoalProgress } from '../../utils/progressUtils';
 
 const GoalDetail = ({ 
   goal, 
@@ -26,20 +27,6 @@ const GoalDetail = ({
     });
   };
 
-  const getStatusClass = () => {
-    switch (goal.status) {
-      case 'Not Started':
-        return 'status-not-started';
-      case 'In Progress':
-        return 'status-in-progress';
-      case 'Completed':
-        return 'status-completed';
-      case 'On Hold':
-        return 'status-on-hold';
-      default:
-        return '';
-    }
-  };
 
   const handleAddKPI = () => {
     setCurrentKPI(null);
@@ -68,29 +55,26 @@ const GoalDetail = ({
     return <div>Loading goal details...</div>;
   }
 
+  const progressPercent = calculateGoalProgress(goal);
+
   return (
     <div className="goal-detail">
       <div className="goal-detail-header">
         <h2>{goal.title}</h2>
-        <span className={`goal-status ${getStatusClass()}`}>
-          {goal.status}
-        </span>
       </div>
 
       <div className="goal-progress-section">
         <h3>Progress</h3>
         {relatedTasks && relatedTasks.length > 0 ? (() => {
-          const completed = relatedTasks.filter(task => task.status === "Completed").length;
-          const percent = Math.round((completed / relatedTasks.length) * 100);
           return (
             <>
               <div className="goal-progress-bar">
                 <div 
                   className="goal-progress-fill" 
-                  style={{ width: `${percent}%` }}
+                  style={{ width: `${progressPercent}%` }}
                 ></div>
               </div>
-              <span className="goal-progress-value">{percent}%</span>
+              <span className="goal-progress-value">{progressPercent}%</span>
             </>
           );
         })() : (
@@ -183,7 +167,7 @@ const GoalDetail = ({
       )}
 
       <Modal isOpen={isKPICreationModalOpen} onClose={() => setIsKPICreationModalOpen(false)}>
-        <KPICreationModal 
+        <KPICreationModal
           goal={goal}
           onSubmit={handleKPICreationSubmit}
           onCancel={() => setIsKPICreationModalOpen(false)}

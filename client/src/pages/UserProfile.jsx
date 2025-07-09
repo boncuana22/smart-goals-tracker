@@ -240,25 +240,13 @@ const UserProfile = () => {
                       <div className="goal-info">
                         <div className="goal-title">{goal.title}</div>
                         <div className="goal-meta">
-                          <span className={`goal-status status-${goal.status.toLowerCase().replace(' ', '-')}`}>
-                            {goal.status}
-                          </span>
+                          
                           {goal.time_bound_date && (
                             <span className="deadline">
                               Deadline: {new Date(goal.time_bound_date).toLocaleDateString()}
                             </span>
                           )}
                         </div>
-                      </div>
-                      
-                      <div className="goal-progress">
-                        <div className="progress-bar">
-                          <div 
-                            className="progress-fill" 
-                            style={{ width: `${goal.progress || 0}%` }}
-                          ></div>
-                        </div>
-                        <div className="progress-value">{goal.progress || 0}%</div>
                       </div>
                     </div>
                   ))

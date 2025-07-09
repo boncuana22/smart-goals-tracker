@@ -67,7 +67,7 @@ const Teams = () => {
     try {
       setLoading(true);
       
-      // ✅ AICI FACE CEREREA CĂTRE API!
+      // AICI FACE CEREREA CĂTRE API!
       await teamService.inviteToTeam(selectedTeam.id, { email: inviteEmail });
       
       setInviteStatus({
@@ -131,16 +131,7 @@ const Teams = () => {
                   <p className="team-description">{team.description}</p>
                 )}
                 
-                <div className="team-stats">
-                  <div className="stat">
-                    <span className="stat-value">{team.Users?.length || 0}</span>
-                    <span className="stat-label">Members</span>
-                  </div>
-                  <div className="stat">
-                    <span className="stat-value">{team.goals?.length || 0}</span>
-                    <span className="stat-label">Goals</span>
-                  </div>
-                </div>
+               
                 
                 <div className="team-actions">
                   <button 

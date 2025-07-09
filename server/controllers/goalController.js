@@ -34,7 +34,7 @@ exports.getAllGoals = async (req, res) => {
         { 
           model: KPI, 
           as: 'kpis',
-          attributes: ['id', 'name', 'current_value', 'target_value', 'unit', 'weight_in_goal', 'kpi_type'],
+          attributes: ['id', 'name', 'current_value', 'target_value', 'unit', 'weight_in_goal', 'kpi_type', 'is_achieved'],
           include: [
             {
               model: Task,

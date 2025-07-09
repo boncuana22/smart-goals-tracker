@@ -105,16 +105,13 @@ const GoalDetails = () => {
     }
   };
 
-  const handleUpdateKPIValue = async (kpiId, value) => {
+  const handleUpdateKPIValue = async (kpiId, valueObj) => {
     try {
-      const response = await kpiService.updateKPIValue(kpiId, value);
-      
-      // Update KPI state
+      const response = await kpiService.updateKPIValue(kpiId, valueObj);
+      // Update KPI state with merged fields
       const updatedKPIs = goal.kpis.map(kpi => 
-        kpi.id === kpiId ? { ...kpi, current_value: value } : kpi
+        kpi.id === kpiId ? { ...kpi, ...valueObj } : kpi
       );
-      
-      // Update goal state (progress)
       setGoal({
         ...goal,
         kpis: updatedKPIs,

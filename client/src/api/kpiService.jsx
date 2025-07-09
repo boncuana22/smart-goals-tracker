@@ -26,8 +26,8 @@ const kpiService = {
     return response.data;
   },
 
-  updateKPIValue: async (id, current_value) => {
-    const response = await api.patch(`/kpis/${id}/value`, { current_value });
+  updateKPIValue: async (id, valueObj) => {
+    const response = await api.patch(`/kpis/${id}/value`, valueObj);
     return response.data;
   },
   

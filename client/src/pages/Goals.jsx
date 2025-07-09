@@ -13,7 +13,6 @@ const Goals = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
-  const [filter, setFilter] = useState('all');
 
   useEffect(() => {
     loadGoals();
@@ -78,17 +77,12 @@ const Goals = () => {
     }
   };
 
-  // Filtrare și căutare
-  const filteredGoals = goals
-    .filter(goal => {
-      if (filter === 'all') return true;
-      return goal.status === filter;
-    })
-    .filter(goal => {
-      if (!searchTerm) return true;
-      return goal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-             goal.description?.toLowerCase().includes(searchTerm.toLowerCase());
-    });
+  // Filtrare doar prin căutare
+  const filteredGoals = goals.filter(goal => {
+    if (!searchTerm) return true;
+    return goal.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+           goal.description?.toLowerCase().includes(searchTerm.toLowerCase());
+  });
 
   return (
     <Layout>
@@ -110,39 +104,6 @@ const Goals = () => {
               className="search-input"
             />
           </div>
-          
-          <div className="filter-buttons">
-            <button 
-              className={`filter-btn ${filter === 'all' ? 'active' : ''}`}
-              onClick={() => setFilter('all')}
-            >
-              All
-            </button>
-            <button 
-              className={`filter-btn ${filter === 'In Progress' ? 'active' : ''}`}
-              onClick={() => setFilter('In Progress')}
-            >
-              In Progress
-            </button>
-            <button 
-              className={`filter-btn ${filter === 'Not Started' ? 'active' : ''}`}
-              onClick={() => setFilter('Not Started')}
-            >
-              Not Started
-            </button>
-            <button 
-              className={`filter-btn ${filter === 'Completed' ? 'active' : ''}`}
-              onClick={() => setFilter('Completed')}
-            >
-              Completed
-            </button>
-            <button 
-              className={`filter-btn ${filter === 'On Hold' ? 'active' : ''}`}
-              onClick={() => setFilter('On Hold')}
-            >
-              On Hold
-            </button>
-          </div>
         </div>
         
         {error && <div className="alert alert-danger">{error}</div>}
@@ -151,8 +112,8 @@ const Goals = () => {
           <div className="loading">Loading goals...</div>
         ) : filteredGoals.length === 0 ? (
           <div className="empty-goals">
-            {searchTerm || filter !== 'all' 
-              ? 'No goals match your search or filter criteria.' 
+            {searchTerm 
+              ? 'No goals match your search criteria.' 
               : 'No goals have been created yet. Click "Add New Goal" to get started.'}
           </div>
         ) : (

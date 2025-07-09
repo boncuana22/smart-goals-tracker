@@ -134,6 +134,18 @@ exports.createKPI = async (req, res) => {
       });
     }
     
+    // --- LOGICĂ is_achieved ---
+    let is_achieved = false;
+    if (kpi_type === 'operational') {
+      is_achieved = req.body.is_achieved === true;
+    } else if (kpi_type === 'financial') {
+      if (target_value && current_value >= target_value) {
+        is_achieved = true;
+      } else {
+        is_achieved = req.body.is_achieved === true; // opțional, permite și manual
+      }
+    }
+    
     const kpi = await KPI.create({
       name,
       description: description || null,
@@ -144,7 +156,8 @@ exports.createKPI = async (req, res) => {
       weight_in_goal: weight_in_goal || 0,
       kpi_type: kpi_type || 'operational',
       financial_progress_weight: financial_progress_weight || 100,
-      tasks_progress_weight: tasks_progress_weight || 0
+      tasks_progress_weight: tasks_progress_weight || 0,
+      is_achieved // <-- nou
     });
     
     // Reload goal with updated KPIs
@@ -248,6 +261,18 @@ exports.updateKPI = async (req, res) => {
       }
     }
     
+    // --- LOGICĂ is_achieved LA UPDATE ---
+    let updatedIsAchieved = kpi.is_achieved;
+    if (kpi_type === 'operational') {
+      updatedIsAchieved = req.body.is_achieved === true;
+    } else if (kpi_type === 'financial') {
+      if (target_value && current_value >= target_value) {
+        updatedIsAchieved = true;
+      } else {
+        updatedIsAchieved = req.body.is_achieved === true;
+      }
+    }
+    
     // Store the old values
     const oldGoalId = kpi.goal_id;
     const oldCurrentValue = kpi.current_value;
@@ -264,7 +289,8 @@ exports.updateKPI = async (req, res) => {
       weight_in_goal: weight_in_goal !== undefined ? weight_in_goal : kpi.weight_in_goal,
       kpi_type: kpi_type || kpi.kpi_type,
       financial_progress_weight: financial_progress_weight !== undefined ? financial_progress_weight : kpi.financial_progress_weight,
-      tasks_progress_weight: tasks_progress_weight !== undefined ? tasks_progress_weight : kpi.tasks_progress_weight
+      tasks_progress_weight: tasks_progress_weight !== undefined ? tasks_progress_weight : kpi.tasks_progress_weight,
+      is_achieved: updatedIsAchieved // <-- nou
     });
     
     // If significant values changed, update goal progress
@@ -371,9 +397,9 @@ exports.deleteKPI = async (req, res) => {
 exports.updateKPIValue = async (req, res) => {
   try {
     const { id } = req.params;
-    const { current_value } = req.body;
+    const { current_value, is_achieved } = req.body;
     const userId = req.user.id;
-    
+
     // Verificare că KPI-ul aparține unui obiectiv al utilizatorului
     const kpi = await KPI.findOne({
       where: { id },
@@ -382,13 +408,17 @@ exports.updateKPIValue = async (req, res) => {
         where: { created_by: userId }
       }]
     });
-    
+
     if (!kpi) {
       return res.status(404).json({ message: 'KPI not found or unauthorized' });
     }
-    
-    await kpi.update({ current_value });
-    
+
+    // Update current_value and/or is_achieved if present
+    const updateFields = {};
+    if (current_value !== undefined) updateFields.current_value = current_value;
+    if (is_achieved !== undefined) updateFields.is_achieved = is_achieved;
+    await kpi.update(updateFields);
+
     // Update goal progress based on the updated KPI
     const goal = await Goal.findByPk(kpi.goal_id, {
       include: [
@@ -399,11 +429,11 @@ exports.updateKPIValue = async (req, res) => {
         }
       ]
     });
-    
+
     if (goal) {
       await updateGoalProgress(goal, goal.kpis);
     }
-    
+
     res.status(200).json({ 
       message: 'KPI value updated successfully', 
       kpi,

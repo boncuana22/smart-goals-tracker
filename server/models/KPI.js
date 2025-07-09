@@ -47,6 +47,11 @@ const KPI = sequelize.define('KPI', {
     defaultValue: 0,
     comment: 'Weight of tasks progress in KPI (percentage)'
   },
+  is_achieved: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false,
+    comment: 'Marks if the KPI is considered achieved'
+  },
   goal_id: {
     type: DataTypes.INTEGER,
     allowNull: false,

@@ -12,5 +12,6 @@ router.get('/', financialController.getAllFinancialData);
 router.get('/:id', financialController.getFinancialDataById);
 router.post('/upload', upload.single('file'), financialController.uploadFinancialData);
 router.delete('/:id', financialController.deleteFinancialData);
+router.get('/metrics', financialController.getAllFinancialMetrics);
 
 module.exports = router;
